@@ -19,7 +19,7 @@ impl EventHandler for Handler {}
 #[tokio::main]
 async fn main() {
     //DEBUG
-    std::env::set_current_dir(".\\env").ok();
+    std::env::set_current_dir(".\\test").ok();
 
     //Init
     file_sys::prep_dir();
