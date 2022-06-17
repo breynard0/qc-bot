@@ -2,18 +2,40 @@
 pub struct Config {
     pub token: String,
     pub prefix: String,
-    pub admin_whitelist: Vec<u64>
+    pub admin_whitelist: Vec<u64>,
+    pub trivia_question: Vec<Trivia>,
 }
 
 impl Config {
-    fn new() -> Config
-    {
-        Config { token: String::new(), prefix: "--".to_string(), admin_whitelist: Vec::new() }
+    fn new() -> Config {
+        Config {
+            token: String::new(),
+            prefix: "--".to_string(),
+            admin_whitelist: Vec::new(),
+            trivia_question: [
+                Trivia {
+                    question: "Test 1".to_string(),
+                    anwser: "Example Answer 1".to_string(),
+                },
+                Trivia {
+                    question: "Test 2".to_string(),
+                    anwser: "Example Answer 2".to_string(),
+                },
+            ]
+            .to_vec(),
+        }
     }
 }
 
+#[derive(serde::Serialize, serde::Deserialize, Clone)]
+pub struct Trivia {
+    question: String,
+    anwser: String,
+}
+
 pub fn get_config() -> Config {
-    let config: Config = toml::from_str(&std::fs::read_to_string(".\\config.toml").unwrap()).unwrap();
+    let config: Config =
+        toml::from_str(&std::fs::read_to_string(".\\config.toml").unwrap()).unwrap();
     config
 }
 
