@@ -18,7 +18,7 @@ async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.author.name.to_string(),
             money: 100,
-            last_redeem: SystemTime::now()
+            last_redeem: SystemTime::UNIX_EPOCH
         };
         if !data.usernames.contains(&mu.user) {
             msg.reply(ctx, format!("{} has $100", mu.user)).await?;
@@ -35,7 +35,7 @@ async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.mentions[0].name.to_string(),
             money: 100,
-            last_redeem: SystemTime::now()
+            last_redeem: SystemTime::UNIX_EPOCH
         };
         if !data.usernames.contains(&mu.user) {
             msg.reply(ctx, format!("{} has $100", mu.user)).await?;
@@ -72,7 +72,7 @@ async fn tax(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.mentions[0].name.to_string(),
             money: 100,
-            last_redeem: SystemTime::now()
+            last_redeem: SystemTime::UNIX_EPOCH
         };
         if !data.usernames.contains(&mu.user) {
             data.usernames.push(mu.user.clone());
@@ -110,7 +110,7 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut sender_data: MoneyUser = MoneyUser {
         user: "".to_string(),
         money: 100,
-        last_redeem: SystemTime::now()
+        last_redeem: SystemTime::UNIX_EPOCH
     };
 
     if amount < 0 {
@@ -140,14 +140,14 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut target_data: MoneyUser = MoneyUser {
         user: "".to_string(),
         money: 100,
-        last_redeem: SystemTime::now()
+        last_redeem: SystemTime::UNIX_EPOCH
     };
 
     if !data.usernames.contains(&target.name) {
         target_data = MoneyUser {
             money: 100,
             user: target.name.to_string(),
-            last_redeem: SystemTime::now()
+            last_redeem: SystemTime::UNIX_EPOCH
         };
         data.usernames.push(target_data.user.clone());
         data.users.push(target_data.clone());
@@ -217,7 +217,7 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     let mut mu = MoneyUser {
         user: msg.author.name.to_string(),
         money: 100,
-        last_redeem: SystemTime::now()
+        last_redeem: SystemTime::UNIX_EPOCH
     };
     if !data.usernames.contains(&mu.user) {
         data.usernames.push(mu.user.clone());
@@ -325,3 +325,69 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
+struct Time
+{
+    hours: i32,
+    minutes: i8,
+    seconds: i8
+}
+
+#[command]
+async fn redeem(ctx: &Context, msg: &Message) -> CommandResult {
+    let amount = 60;
+    let mut data: MoneyUsers = file_sys::de_money();
+    let cooldown: f64 = 57600.0;
+
+    let mut mu = MoneyUser {
+        user: msg.author.name.to_string(),
+        money: 100,
+        last_redeem: SystemTime::UNIX_EPOCH
+    };
+    if !data.usernames.contains(&mu.user) {
+        data.usernames.push(mu.user.clone());
+        data.users.push(mu.clone());
+        file_sys::ser_money(data.clone());
+    }
+
+    for u in data.users.clone() {
+        if u.user == msg.author.name.to_string() {
+            mu = u;
+        }
+    }
+
+    if std::time::SystemTime::now().duration_since(mu.last_redeem).unwrap().as_secs_f64() > cooldown {
+        mu.money += amount;
+        mu.last_redeem = std::time::SystemTime::now();
+
+        let idx1 = data.users.iter().position(|r| r.user == mu.user).unwrap();
+        let idx2 = data.usernames.iter().position(|r| r == &mu.user).unwrap();
+
+        data.users.remove(idx1);
+        data.usernames.remove(idx2);
+
+        data.usernames.push(mu.user.clone());
+        data.users.push(mu.clone());
+
+        file_sys::ser_money(data);
+
+        msg.reply(ctx, format!("Redeemed ${}!", amount)).await?;
+    }
+    else
+    {
+        let secs_until: f64 = (cooldown - std::time::SystemTime::now().duration_since(mu.last_redeem).unwrap().as_secs_f64()).round();
+
+        let duration = Time {
+            hours: (secs_until / 3600.0).floor() as i32,
+            minutes: ((secs_until % 3600.0) / 60.0).floor() as i8,
+            seconds: ((secs_until % 3600.0) % 60.0).floor() as i8
+        };
+
+        msg.reply(ctx, format!("You already redeemed your reward! You can redeem again in {} hours, {} minutes and {} seconds", 
+            duration.hours, 
+            duration.minutes, 
+            duration.seconds
+        )).await?;
+    }
+
+    Ok(())
+}

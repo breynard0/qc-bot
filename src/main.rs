@@ -1,7 +1,7 @@
 use qc_bot::*;
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
-use serenity::framework::standard::{CommandResult, StandardFramework};
+use serenity::framework::standard::{CommandResult, StandardFramework, Args};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 
@@ -9,9 +9,10 @@ use crate::money::BAL_COMMAND;
 use crate::money::PAY_COMMAND;
 use crate::money::TAX_COMMAND;
 use crate::money::TRIVIA_COMMAND;
+use crate::money::REDEEM_COMMAND;
 
 #[group]
-#[commands(start_game, tax, bal, pay, trivia)]
+#[commands(start_game, tax, bal, pay, trivia, redeem)]
 struct General;
 
 struct Handler;
