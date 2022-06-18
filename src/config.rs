@@ -12,16 +12,7 @@ impl Config {
             token: String::new(),
             prefix: "--".to_string(),
             admin_whitelist: Vec::new(),
-            trivia_question: [
-                Trivia {
-                    question: "Test 1".to_string(),
-                    anwser: "Example Answer 1".to_string(),
-                },
-                Trivia {
-                    question: "Test 2".to_string(),
-                    anwser: "Example Answer 2".to_string(),
-                },
-            ]
+            trivia_question: []
             .to_vec(),
         }
     }
@@ -29,8 +20,8 @@ impl Config {
 
 #[derive(serde::Serialize, serde::Deserialize, Clone)]
 pub struct Trivia {
-    question: String,
-    anwser: String,
+    pub question: String,
+    pub answer: String,
 }
 
 pub fn get_config() -> Config {

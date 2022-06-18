@@ -1,11 +1,13 @@
+use qc_bot::file_sys::{MoneyUser, MoneyUsers};
+use qc_bot::*;
+use rand::Rng;
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::Args;
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
-use qc_bot::file_sys::{MoneyUser, MoneyUsers};
-use qc_bot::*;
+use serenity::utils::colours;
 
 #[group]
 #[commands(start_game, tax, bal, pay, trivia)]
@@ -252,7 +254,7 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     let mut data: MoneyUsers = file_sys::de_money();
 
     let mut mu = MoneyUser {
-        user: msg.mentions[0].name.to_string(),
+        user: msg.author.name.to_string(),
         money: 100,
     };
     if !data.usernames.contains(&mu.user) {
@@ -262,9 +264,15 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     }
 
     for u in data.users.clone() {
-        if u.user == msg.mentions[0].name {
+        if u.user == msg.author.name.to_string() {
             mu = u;
         }
+    }
+
+    if mu.money + amount < 0
+    {
+        msg.reply(ctx, format!("You don't have enough money for this! Missing: ${}", (&mu.money + &amount) * -1)).await?;
+        return Ok(())
     }
 
     mu.money += amount;
@@ -279,13 +287,78 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     data.users.push(mu.clone());
 
     file_sys::ser_money(data);
+    data = file_sys::de_money();
 
-    msg.reply(ctx, "Sending a trivia question to your DMs now!").await?;
+    msg.reply(ctx, "Took $20 and sending a trivia question to your DMs now!")
+        .await?;
 
     let channel = sender.create_dm_channel(ctx).await?;
+
+    channel.send_message(ctx, |b|{
+        b.content("Sending question...")
+    }).await?;
+
+    let channel_msg = &channel.messages(ctx, |retriever|
+    {
+        retriever.limit(1)
+    }).await?[0];
     let mut answered = false;
 
-    let question = config::
+    let question = config::get_config()
+        .trivia_question
+        .get(rand::prelude::thread_rng().gen_range(0..config::get_config().trivia_question.len()))
+        .unwrap()
+        .clone();
 
+    channel
+        .send_message(ctx, |m| {
+            m.content("")
+                .tts(true)
+                .embed(|e| {
+                    e.title("Write your answer in chat")
+                    .description(question.question)
+                    .color(colours::roles::BLUE)
+                })
+        })
+        .await?;
+
+    while !answered {
+        std::thread::sleep(std::time::Duration::from_millis(200));
+
+        let cur_msg = &channel.messages(ctx, |retriever| {
+            retriever.limit(1)
+        }).await?[0];
+
+        if cur_msg.content.is_empty() && cur_msg.author.bot
+        {
+            continue;
+        }
+
+        if cur_msg.content != channel_msg.content
+        {
+            answered = true;
+            
+            if cur_msg.content.to_lowercase().replace(" ", "") == question.answer.to_lowercase().replace(" ", "") {
+                cur_msg.reply(ctx, "You got it right! Adding $30 to your account!").await?;
+                msg.reply(ctx, format!("{} got it right!", msg.author.name)).await?;
+                mu.money += 30;
+
+                let idx1 = data.users.iter().position(|r| r.user == mu.user).unwrap();
+                let idx2 = data.usernames.iter().position(|r| r == &mu.user).unwrap();
+
+                data.users.remove(idx1);
+                data.usernames.remove(idx2);
+
+                data.usernames.push(mu.user.clone());
+                data.users.push(mu.clone());
+            }
+            else {
+                cur_msg.reply(ctx, format!("Oh no! You didn't get it! Correct answer: {}", question.answer)).await?;
+                msg.reply(ctx, format!("{} got it wrong :(", msg.author.name)).await?;
+            }
+        }
+    }
+
+    file_sys::ser_money(data);
     Ok(())
 }
