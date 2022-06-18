@@ -4,11 +4,11 @@ use serenity::framework::standard::Args;
 use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
-use werewolf_bot::file_sys::{MoneyUser, MoneyUsers};
-use werewolf_bot::*;
+use qc_bot::file_sys::{MoneyUser, MoneyUsers};
+use qc_bot::*;
 
 #[group]
-#[commands(start_game, tax, bal, pay)]
+#[commands(start_game, tax, bal, pay, trivia)]
 struct General;
 
 struct Handler;
@@ -242,5 +242,50 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     }
 
     file_sys::ser_money(data);
+    Ok(())
+}
+
+#[command]
+async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
+    let sender = &msg.author;
+    let amount = -20;
+    let mut data: MoneyUsers = file_sys::de_money();
+
+    let mut mu = MoneyUser {
+        user: msg.mentions[0].name.to_string(),
+        money: 100,
+    };
+    if !data.usernames.contains(&mu.user) {
+        data.usernames.push(mu.user.clone());
+        data.users.push(mu.clone());
+        file_sys::ser_money(data.clone());
+    }
+
+    for u in data.users.clone() {
+        if u.user == msg.mentions[0].name {
+            mu = u;
+        }
+    }
+
+    mu.money += amount;
+
+    let idx1 = data.users.iter().position(|r| r.user == mu.user).unwrap();
+    let idx2 = data.usernames.iter().position(|r| r == &mu.user).unwrap();
+
+    data.users.remove(idx1);
+    data.usernames.remove(idx2);
+
+    data.usernames.push(mu.user.clone());
+    data.users.push(mu.clone());
+
+    file_sys::ser_money(data);
+
+    msg.reply(ctx, "Sending a trivia question to your DMs now!").await?;
+
+    let channel = sender.create_dm_channel(ctx).await?;
+    let mut answered = false;
+
+    let question = config::
+
     Ok(())
 }

@@ -637,6 +637,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "qc_bot"
+version = "0.1.0"
+dependencies = [
+ "serde",
+ "serde_json",
+ "serenity",
+ "tokio",
+ "toml",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1302,17 +1313,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "44d8de8415c823c8abd270ad483c6feeac771fad964890779f9a8cb24fbbc1bf"
 dependencies = [
  "webpki",
-]
-
-[[package]]
-name = "werewolf_bot"
-version = "0.1.0"
-dependencies = [
- "serde",
- "serde_json",
- "serenity",
- "tokio",
- "toml",
 ]
 
 [[package]]
