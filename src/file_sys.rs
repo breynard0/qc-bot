@@ -4,6 +4,7 @@ use crate::*;
 pub struct MoneyUser {
     pub user: String,
     pub money: i32,
+    pub last_redeem: std::time::SystemTime
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
