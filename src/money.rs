@@ -300,30 +300,17 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
         {
             answered = true;
 
-            let mut correct = cur_msg.content.to_lowercase().replace(" ", "") == question.answer.to_lowercase().replace(" ", "");
+            let correct = 
+            cur_msg.content
+                .to_lowercase()
+                .replace(" ", "")
+                .replace(".", "")
+             == 
+             question.answer
+                .to_lowercase()
+                .replace(" ", "")
+                .replace(".", "");
 
-            //Buffer System
-            if !correct
-            {
-                let greater: usize;
-                let lesser: usize;
-
-                if question.answer.len() > cur_msg.content.len()
-                {
-                    greater = question.answer.len();
-                    lesser = cur_msg.content.len();
-                }
-                else
-                {
-                    lesser = question.answer.len();
-                    greater = cur_msg.content.len();
-                }
-
-                if greater - lesser <= 2 {
-                    correct = true;
-                }
-            }
-            
             if correct {
                 cur_msg.reply(ctx, "You got it right! Adding $30 to your account!").await?;
                 msg.reply(ctx, format!("{} got it right!", msg.author.name)).await?;
