@@ -300,16 +300,10 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
         {
             answered = true;
 
-            let correct = 
-            cur_msg.content
-                .to_lowercase()
-                .replace(" ", "")
-                .replace(".", "")
-             == 
-             question.answer
-                .to_lowercase()
-                .replace(" ", "")
-                .replace(".", "");
+            let cur_msg_content = cur_msg.content.chars().filter(|c| c.is_alphabetic()).collect::<String>().to_lowercase();
+            let question_answer = question.answer.chars().filter(|c| c.is_alphabetic()).collect::<String>().to_lowercase();
+
+            let correct = cur_msg_content == question_answer;
 
             if correct {
                 cur_msg.reply(ctx, "You got it right! Adding $30 to your account!").await?;
