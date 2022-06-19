@@ -108,7 +108,7 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let amount = args.single::<i32>().unwrap();
     let mut data: MoneyUsers = file_sys::de_money();
     let mut sender_data: MoneyUser = MoneyUser {
-        user: "".to_string(),
+        user: "&mut ".to_string(),
         money: 100,
         last_redeem: SystemTime::UNIX_EPOCH
     };
@@ -299,8 +299,32 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
         if cur_msg.content != channel_msg.content
         {
             answered = true;
+
+            let mut correct = cur_msg.content.to_lowercase().replace(" ", "") == question.answer.to_lowercase().replace(" ", "");
+
+            //Buffer System
+            if !correct
+            {
+                let greater: usize;
+                let lesser: usize;
+
+                if question.answer.len() > cur_msg.content.len()
+                {
+                    greater = question.answer.len();
+                    lesser = cur_msg.content.len();
+                }
+                else
+                {
+                    lesser = question.answer.len();
+                    greater = cur_msg.content.len();
+                }
+
+                if greater - lesser <= 2 {
+                    correct = true;
+                }
+            }
             
-            if cur_msg.content.to_lowercase().replace(" ", "") == question.answer.to_lowercase().replace(" ", "") {
+            if correct {
                 cur_msg.reply(ctx, "You got it right! Adding $30 to your account!").await?;
                 msg.reply(ctx, format!("{} got it right!", msg.author.name)).await?;
                 mu.money += 30;
