@@ -12,8 +12,7 @@ impl Config {
             token: String::new(),
             prefix: "--".to_string(),
             admin_whitelist: Vec::new(),
-            trivia_question: []
-            .to_vec(),
+            trivia_question: [].to_vec(),
         }
     }
 }

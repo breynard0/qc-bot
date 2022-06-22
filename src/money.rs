@@ -18,7 +18,7 @@ async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.author.name.to_string(),
             money: 100,
-            last_redeem: SystemTime::UNIX_EPOCH
+            last_redeem: SystemTime::UNIX_EPOCH,
         };
         if !data.usernames.contains(&mu.user) {
             msg.reply(ctx, format!("{} has $100", mu.user)).await?;
@@ -35,7 +35,7 @@ async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.mentions[0].name.to_string(),
             money: 100,
-            last_redeem: SystemTime::UNIX_EPOCH
+            last_redeem: SystemTime::UNIX_EPOCH,
         };
         if !data.usernames.contains(&mu.user) {
             msg.reply(ctx, format!("{} has $100", mu.user)).await?;
@@ -72,7 +72,7 @@ async fn tax(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         let mut mu = MoneyUser {
             user: msg.mentions[0].name.to_string(),
             money: 100,
-            last_redeem: SystemTime::UNIX_EPOCH
+            last_redeem: SystemTime::UNIX_EPOCH,
         };
         if !data.usernames.contains(&mu.user) {
             data.usernames.push(mu.user.clone());
@@ -110,7 +110,7 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut sender_data: MoneyUser = MoneyUser {
         user: "&mut ".to_string(),
         money: 100,
-        last_redeem: SystemTime::UNIX_EPOCH
+        last_redeem: SystemTime::UNIX_EPOCH,
     };
 
     if amount < 0 {
@@ -140,14 +140,14 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let mut target_data: MoneyUser = MoneyUser {
         user: "".to_string(),
         money: 100,
-        last_redeem: SystemTime::UNIX_EPOCH
+        last_redeem: SystemTime::UNIX_EPOCH,
     };
 
     if !data.usernames.contains(&target.name) {
         target_data = MoneyUser {
             money: 100,
             user: target.name.to_string(),
-            last_redeem: SystemTime::UNIX_EPOCH
+            last_redeem: SystemTime::UNIX_EPOCH,
         };
         data.usernames.push(target_data.user.clone());
         data.users.push(target_data.clone());
@@ -217,7 +217,7 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     let mut mu = MoneyUser {
         user: msg.author.name.to_string(),
         money: 100,
-        last_redeem: SystemTime::UNIX_EPOCH
+        last_redeem: SystemTime::UNIX_EPOCH,
     };
     if !data.usernames.contains(&mu.user) {
         data.usernames.push(mu.user.clone());
@@ -231,10 +231,16 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
         }
     }
 
-    if mu.money + amount < 0
-    {
-        msg.reply(ctx, format!("You don't have enough money for this! Missing: ${}", (&mu.money + &amount) * -1)).await?;
-        return Ok(())
+    if mu.money + amount < 0 {
+        msg.reply(
+            ctx,
+            format!(
+                "You don't have enough money for this! Missing: ${}",
+                (&mu.money + &amount) * -1
+            ),
+        )
+        .await?;
+        return Ok(());
     }
 
     mu.money += amount;
@@ -251,19 +257,21 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     file_sys::ser_money(data);
     data = file_sys::de_money();
 
-    msg.reply(ctx, "Took $20 and sending a trivia question to your DMs now!")
-        .await?;
+    msg.reply(
+        ctx,
+        "Took $20 and sending a trivia question to your DMs now!",
+    )
+    .await?;
 
     let channel = sender.create_dm_channel(ctx).await?;
 
-    channel.send_message(ctx, |b|{
-        b.content("Sending question...")
-    }).await?;
+    channel
+        .send_message(ctx, |b| b.content("Sending question..."))
+        .await?;
 
-    let channel_msg = &channel.messages(ctx, |retriever|
-    {
-        retriever.limit(1)
-    }).await?[0];
+    let channel_msg = &channel
+        .messages(ctx, |retriever| retriever.limit(1))
+        .await?[0];
     let mut answered = false;
 
     let question = config::get_config()
@@ -274,40 +282,49 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
 
     channel
         .send_message(ctx, |m| {
-            m.content("")
-                .tts(true)
-                .embed(|e| {
-                    e.title("Write your answer in chat")
+            m.content("").tts(true).embed(|e| {
+                e.title("Write your answer in chat")
                     .description(question.question)
                     .color(colours::roles::BLUE)
-                })
+            })
         })
         .await?;
 
     while !answered {
         std::thread::sleep(std::time::Duration::from_millis(200));
 
-        let cur_msg = &channel.messages(ctx, |retriever| {
-            retriever.limit(1)
-        }).await?[0];
+        let cur_msg = &channel
+            .messages(ctx, |retriever| retriever.limit(1))
+            .await?[0];
 
-        if cur_msg.content.is_empty() && cur_msg.author.bot
-        {
+        if cur_msg.content.is_empty() && cur_msg.author.bot {
             continue;
         }
 
-        if cur_msg.content != channel_msg.content
-        {
+        if cur_msg.content != channel_msg.content {
             answered = true;
 
-            let cur_msg_content = cur_msg.content.chars().filter(|c| c.is_alphabetic()).collect::<String>().to_lowercase();
-            let question_answer = question.answer.chars().filter(|c| c.is_alphabetic()).collect::<String>().to_lowercase();
+            let cur_msg_content = cur_msg
+                .content
+                .chars()
+                .filter(|c| c.is_alphabetic())
+                .collect::<String>()
+                .to_lowercase();
+            let question_answer = question
+                .answer
+                .chars()
+                .filter(|c| c.is_alphabetic())
+                .collect::<String>()
+                .to_lowercase();
 
             let correct = cur_msg_content == question_answer;
 
             if correct {
-                cur_msg.reply(ctx, "You got it right! Adding $30 to your account!").await?;
-                msg.reply(ctx, format!("{} got it right!", msg.author.name)).await?;
+                cur_msg
+                    .reply(ctx, "You got it right! Adding $30 to your account!")
+                    .await?;
+                msg.reply(ctx, format!("{} got it right!", msg.author.name))
+                    .await?;
                 mu.money += 30;
 
                 let idx1 = data.users.iter().position(|r| r.user == mu.user).unwrap();
@@ -318,10 +335,18 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
 
                 data.usernames.push(mu.user.clone());
                 data.users.push(mu.clone());
-            }
-            else {
-                cur_msg.reply(ctx, format!("Oh no! You didn't get it! Correct answer: {}", question.answer)).await?;
-                msg.reply(ctx, format!("{} got it wrong :(", msg.author.name)).await?;
+            } else {
+                cur_msg
+                    .reply(
+                        ctx,
+                        format!(
+                            "Oh no! You didn't get it! Correct answer: {}",
+                            question.answer
+                        ),
+                    )
+                    .await?;
+                msg.reply(ctx, format!("{} got it wrong :(", msg.author.name))
+                    .await?;
             }
         }
     }
@@ -330,11 +355,10 @@ async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     Ok(())
 }
 
-struct Time
-{
+struct Time {
     hours: i32,
     minutes: i8,
-    seconds: i8
+    seconds: i8,
 }
 
 #[command]
@@ -346,7 +370,7 @@ async fn redeem(ctx: &Context, msg: &Message) -> CommandResult {
     let mut mu = MoneyUser {
         user: msg.author.name.to_string(),
         money: 100,
-        last_redeem: SystemTime::UNIX_EPOCH
+        last_redeem: SystemTime::UNIX_EPOCH,
     };
     if !data.usernames.contains(&mu.user) {
         data.usernames.push(mu.user.clone());
@@ -360,7 +384,12 @@ async fn redeem(ctx: &Context, msg: &Message) -> CommandResult {
         }
     }
 
-    if std::time::SystemTime::now().duration_since(mu.last_redeem).unwrap().as_secs_f64() > cooldown {
+    if std::time::SystemTime::now()
+        .duration_since(mu.last_redeem)
+        .unwrap()
+        .as_secs_f64()
+        > cooldown
+    {
         mu.money += amount;
         mu.last_redeem = std::time::SystemTime::now();
 
@@ -376,15 +405,18 @@ async fn redeem(ctx: &Context, msg: &Message) -> CommandResult {
         file_sys::ser_money(data);
 
         msg.reply(ctx, format!("Redeemed ${}!", amount)).await?;
-    }
-    else
-    {
-        let secs_until: f64 = (cooldown - std::time::SystemTime::now().duration_since(mu.last_redeem).unwrap().as_secs_f64()).round();
+    } else {
+        let secs_until: f64 = (cooldown
+            - std::time::SystemTime::now()
+                .duration_since(mu.last_redeem)
+                .unwrap()
+                .as_secs_f64())
+        .round();
 
         let duration = Time {
             hours: (secs_until / 3600.0).floor() as i32,
             minutes: ((secs_until % 3600.0) / 60.0).floor() as i8,
-            seconds: ((secs_until % 3600.0) % 60.0).floor() as i8
+            seconds: ((secs_until % 3600.0) % 60.0).floor() as i8,
         };
 
         msg.reply(ctx, format!("You already redeemed your reward! You can redeem again in {} hours, {} minutes and {} seconds", 

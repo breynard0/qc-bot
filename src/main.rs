@@ -1,4 +1,5 @@
 use qc_bot::*;
+
 use serenity::async_trait;
 use serenity::framework::standard::macros::{command, group};
 use serenity::framework::standard::{CommandResult, StandardFramework};
@@ -8,9 +9,9 @@ use serenity::utils::colours;
 
 use crate::money::BAL_COMMAND;
 use crate::money::PAY_COMMAND;
+use crate::money::REDEEM_COMMAND;
 use crate::money::TAX_COMMAND;
 use crate::money::TRIVIA_COMMAND;
-use crate::money::REDEEM_COMMAND;
 
 #[group]
 #[commands(start_game, tax, bal, pay, trivia, redeem, help)]
@@ -25,6 +26,10 @@ impl EventHandler for Handler {}
 async fn main() {
     //DEBUG
     std::env::set_current_dir(".\\test").ok();
+
+    let example = file_sys::ShopUsers { usernames: Vec::new(), users: Vec::new() };
+    file_sys::ser_shops(example);
+    shops::get_shop("Siliwolf".to_string());
 
     //Init
     file_sys::prep_dir();
