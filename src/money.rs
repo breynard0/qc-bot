@@ -428,3 +428,62 @@ async fn redeem(ctx: &Context, msg: &Message) -> CommandResult {
 
     Ok(())
 }
+
+#[command]
+async fn leaderboard(ctx: &Context, msg: &Message) -> CommandResult {
+
+    let data = file_sys::de_money();
+    
+    let mut first = MoneyUser { user: "Blank".to_string(), money: 0, last_redeem: std::time::UNIX_EPOCH };
+    let mut second = MoneyUser { user: "Blank".to_string(), money: 0, last_redeem: std::time::UNIX_EPOCH };
+    let mut third = MoneyUser { user: "Blank".to_string(), money: 0, last_redeem: std::time::UNIX_EPOCH };
+    let mut forth = MoneyUser { user: "Blank".to_string(), money: 0, last_redeem: std::time::UNIX_EPOCH };
+    let mut fifth = MoneyUser { user: "Blank".to_string(), money: 0, last_redeem: std::time::UNIX_EPOCH };
+
+    for u in data.users {
+        if u.money > first.money {
+            fifth = forth;
+            forth = third;
+            third = second;
+            second = first;
+            first = u.clone();
+            continue;
+        }
+        else if u.money > second.money {
+            fifth = forth;
+            forth = third;
+            third = second;
+            second = u.clone();
+            continue;
+        }
+        else if u.money > third.money {
+            fifth = forth;
+            forth = third;
+            third = u.clone();
+            continue;
+        }
+        else if u.money > forth.money {
+            fifth = forth;
+            forth = u.clone();
+            continue;
+        }
+        else if u.money > fifth.money {
+            fifth = u.clone();
+            continue;
+        }
+    }
+
+    let content = format!("1) {}, {}\n2) {}, {}\n3) {}, {}\n4) {}, {}\n5) {}, {}", first.user, first.money, second.user, second.money, third.user, third.money, forth.user, forth.money, fifth.user, fifth.money);
+
+    msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
+        m.content("")
+        .embed(|e| {
+            e.title("Leaderboard")
+            .field("Top five:", content, false)
+            .colour(colours::roles::ORANGE)
+        })
+    })
+    .await?;
+
+    Ok(())
+}

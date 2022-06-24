@@ -12,9 +12,10 @@ use crate::money::PAY_COMMAND;
 use crate::money::REDEEM_COMMAND;
 use crate::money::TAX_COMMAND;
 use crate::money::TRIVIA_COMMAND;
+use crate::money::LEADERBOARD_COMMAND;
 
 #[group]
-#[commands(start_game, tax, bal, pay, trivia, redeem, help)]
+#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard)]
 struct General;
 
 struct Handler;
@@ -26,10 +27,6 @@ impl EventHandler for Handler {}
 async fn main() {
     //DEBUG
     std::env::set_current_dir(".\\test").ok();
-
-    let example = file_sys::ShopUsers { usernames: Vec::new(), users: Vec::new() };
-    file_sys::ser_shops(example);
-    shops::get_shop("Siliwolf".to_string());
 
     //Init
     file_sys::prep_dir();
@@ -77,6 +74,7 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
             pay: *Pay money to another user. Usage: --pay <amount> <@User>*\n
             trivia: *Get a trivia question. Costs $20. Usage: --trivia*\n
             redeem: *Redeem your daily reward. Usage: --redeem*\n
+            leaderboard: *Show the top five richest users. Usage: --leaderboard*\n
             ", false)
             .colour(colours::roles::BLUE)
         })

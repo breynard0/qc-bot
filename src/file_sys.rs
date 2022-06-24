@@ -17,7 +17,7 @@ pub struct MoneyUsers {
 pub struct ShopItem {
     pub name: String,
     pub price: i32,
-    pub emoji: serenity::model::id::EmojiId,
+    pub emoji: String
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
