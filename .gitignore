@@ -11,5 +11,5 @@ Cargo.lock
 
 /test/&
 test/config.toml
-test/money.json
 test/shops.json
+test/money.json
