@@ -16,9 +16,10 @@ use crate::money::LEADERBOARD_COMMAND;
 use crate::shops::ADD_ITEM_COMMAND;
 use crate::shops::REMOVE_ITEM_COMMAND;
 use crate::shops::ITEMS_COMMAND;
+use crate::shops::BUY_COMMAND;
 
 #[group]
-#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard, add_item, remove_item, items)]
+#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard, add_item, remove_item, items, buy)]
 struct General;
 
 struct Handler;
