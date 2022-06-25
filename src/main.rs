@@ -73,13 +73,18 @@ async fn help(ctx: &Context, msg: &Message) -> CommandResult {
             .field("**General Commands**", "help: *Shows this embed. Usage: --help*\n
             ", false)
 
-            .field("**Economy Commands**", "tax: *Add or remove money from a user. Admin command. Usage: --tax <amount> <@User>*\n
+            .field("**Base Economy Commands**", "tax: *Add or remove money from a user. Admin command. Usage: --tax <amount> <@User>*\n
             bal: *Check how much money specified user has. Leave user field blank for yourself. Usage: --bal <@User>*\n
             pay: *Pay money to another user. Usage: --pay <amount> <@User>*\n
             trivia: *Get a trivia question. Costs $20. Usage: --trivia*\n
             redeem: *Redeem your daily reward. Usage: --redeem*\n
             leaderboard: *Show the top five richest users. Usage: --leaderboard*\n
             ", false)
+
+            .field("Economy Shop Commands", "add_item: *Add an item to your shop. Only supports Discord built-in emojis. Usage: --add_item <name> <price> <emoji>*\n
+            remove_item: *Removes an item from your shop. Usage: --remove_item <name>*\n
+            items: *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
+            buy: *Buy an item from another user. Usage: --buy <@User> <item_name>", false)
             .colour(colours::roles::BLUE)
         })
     })
