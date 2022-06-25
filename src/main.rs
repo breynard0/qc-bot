@@ -13,9 +13,12 @@ use crate::money::REDEEM_COMMAND;
 use crate::money::TAX_COMMAND;
 use crate::money::TRIVIA_COMMAND;
 use crate::money::LEADERBOARD_COMMAND;
+use crate::shops::ADD_ITEM_COMMAND;
+use crate::shops::REMOVE_ITEM_COMMAND;
+use crate::shops::ITEMS_COMMAND;
 
 #[group]
-#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard)]
+#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard, add_item, remove_item, items)]
 struct General;
 
 struct Handler;
