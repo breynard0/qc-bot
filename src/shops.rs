@@ -37,7 +37,7 @@ pub fn get_shop(username: &String) -> ShopUser {
 }
 
 #[command]
-async fn add_item(_ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn add_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let name = args.single::<String>()?;
     let price = args.single::<i32>()?;
     let emoji = args.single::<String>()?;
@@ -58,7 +58,13 @@ async fn add_item(_ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
         shop_user = data.users[pos].clone();
     }
 
-    shop_user.items.push(ShopItem { name: name, price: price, emoji: emoji });
+    if shop_user.clone().items.contains(&ShopItem{name: name.clone(), price, emoji: emoji.clone()}) {
+        msg.reply(ctx, "Add item failed, your shop already contains an item with the same name!").await?;
+        return Ok(());
+    }
+    else {
+        shop_user.items.push(ShopItem{name: name.clone(), price, emoji});
+    }
 
     // Publish to data
     if data.usernames.contains(&username) {
@@ -71,11 +77,13 @@ async fn add_item(_ctx: &Context, msg: &Message, mut args: Args) -> CommandResul
 
     ser_shops(data);
 
+    msg.reply(ctx, format!("Added item '{}' to your shop!", name)).await?;
+
     Ok(())
 }
 
 #[command]
-async fn remove_item(_ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+async fn remove_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let name = args.single::<String>()?;
 
     let username = &msg.author.name;
@@ -94,10 +102,19 @@ async fn remove_item(_ctx: &Context, msg: &Message, mut args: Args) -> CommandRe
         shop_user = data.users[pos].clone();
     }
 
+    let mut found = false;
     for i in shop_user.items.clone() {
         if i.name == name {
             shop_user.items.remove(shop_user.items.iter().position(|s| s == &i).unwrap());
+            found = true;
         }
+    }
+
+    if !found {
+        msg.reply(ctx, format!("Your shop does not have item '{}'", name)).await?;
+    }
+    else {
+        msg.reply(ctx, format!("Removed item '{}'", name)).await?;
     }
 
     // Publish to data
@@ -127,19 +144,59 @@ async fn items(ctx: &Context, msg: &Message) -> CommandResult {
 
     let mut content = "".to_string();
 
-    for i in _user.items {
+    for i in _user.clone().items {
         content.push_str(format!("{} {}: ${}\n", i.emoji, i.name, i.price).as_str());
     }
 
-    msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
-        m.content("")
-        .embed(|e| {
-            e.title(format!("{}'s shop", _user.user))
-            .field("Items:", content, true)
-            .colour(colours::roles::BLUE)
+    if _user.items.is_empty() {
+        msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
+            m.content("")
+            .embed(|e| {
+                e.title(format!("{}'s shop", _user.user))
+                .field("Items:", "There are no items in this shop", true)
+                .colour(colours::roles::BLUE)
+            })
         })
-    })
-    .await?;
+        .await?;
+    }
+    else {
+        msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
+            m.content("")
+            .embed(|e| {
+                e.title(format!("{}'s shop", _user.user))
+                .field("Items:", content, true)
+                .colour(colours::roles::BLUE)
+            })
+        })
+        .await?;
+    }
     
+    
+    Ok(())
+}
+
+#[command]
+async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+    let _name = args.single::<String>()?;
+    let item = args.single::<String>()?;
+
+    let mut data = de_shops();
+
+    if msg.mentions.is_empty() {
+        msg.reply(ctx, "Please specify a user in the first argument").await?;
+        return Ok(())
+    }
+
+    let user = msg.mentions[0].clone();
+
+    let shop = get_shop(&user.name);
+
+    let mut found = false;
+    for i in shop.items {
+        if i.name == item {
+            
+        }
+    }
+
     Ok(())
 }
