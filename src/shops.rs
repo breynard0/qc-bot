@@ -344,6 +344,8 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 dm.send_message(ctx, |m| m.content("Buy order completed! Seller has been notified and should provide your service. If you have been scammed, DM @Siliwolf to help this get sorted out")).await?;
 
                 user.dm(ctx, |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
+
+                println!("{} bought {} from {} for ${}", msg.author.name, shop_item.name, msg.mentions[0].name, shop_item.price);
             }
             else {
                 dm.send_message(ctx, |m| m.content("Cancelled buy order")).await?;
