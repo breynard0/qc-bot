@@ -206,6 +206,11 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         return Ok(())
     }
 
+    if msg.mentions[0].name == msg.author.name {
+        msg.reply(ctx, "You can't buy your own thing!").await?;
+        return Ok(())
+    }
+
     let dm = author.create_dm_channel(ctx).await?;
     let content = format!("Please verify you would like to buy {} {} for ${} by typing '_QC' below. Type anything else to cancel this", 
     shop_item.emoji, 
