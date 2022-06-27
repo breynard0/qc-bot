@@ -72,6 +72,7 @@ pub fn prep_dir() {
     let mut shops_exists = false;
 
     for file in std::fs::read_dir(".").unwrap() {
+        println!("Detected {:#?} in directory", file.as_ref().unwrap().file_name());
         match file.unwrap().file_name().to_str().unwrap() {
             "money.json" => {
                 money_exists = true;
