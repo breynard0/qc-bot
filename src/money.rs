@@ -11,7 +11,7 @@ use serenity::prelude::*;
 use serenity::utils::colours;
 
 #[command]
-async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
+pub async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
     let data: MoneyUsers = file_sys::de_money();
 
     if msg.mentions.is_empty() {
@@ -54,8 +54,9 @@ async fn bal(ctx: &Context, msg: &Message) -> CommandResult {
 }
 
 #[command]
-async fn tax(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+pub async fn tax(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let sender = &msg.author;
+    args.single::<String>().unwrap();
     let amount = args.single::<i32>().unwrap();
     let mut data: MoneyUsers = file_sys::de_money();
 
@@ -99,12 +100,16 @@ async fn tax(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     }
 
     file_sys::ser_money(data);
+
+    file_sys::log(&format!("{} taxed {} for ${} at {}", msg.author.name, msg.mentions[0].name, amount, chrono::Local::now().format("%Y-%m-%d][%H:%M:%S")), ctx).await;
+
     Ok(())
 }
 
 #[command]
-async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
+pub async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     let sender = msg.clone().author;
+    args.single::<String>().unwrap();
     let amount = args.single::<i32>().unwrap();
     let mut data: MoneyUsers = file_sys::de_money();
     let mut sender_data: MoneyUser = MoneyUser {
@@ -160,6 +165,12 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
         }
     }
 
+    if target.name == sender.name {
+        msg.reply(ctx, "You can't send money to yourself")
+        .await?;
+        return Ok(())
+    }
+
     msg.reply(ctx, format!("Paying ${} to {}", amount, target.name))
         .await?;
 
@@ -209,7 +220,7 @@ async fn pay(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 }
 
 #[command]
-async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
+pub async fn trivia(ctx: &Context, msg: &Message) -> CommandResult {
     let sender = &msg.author;
     let amount = -20;
     let mut data: MoneyUsers = file_sys::de_money();

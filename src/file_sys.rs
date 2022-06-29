@@ -1,4 +1,6 @@
-use crate::*;
+use serenity::client::Context;
+
+use crate::{*, config::get_config};
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MoneyUser {
@@ -70,6 +72,7 @@ pub fn prep_dir() {
     let mut money_exists = false;
     let mut config_exists = false;
     let mut shops_exists = false;
+    let mut log_exists = false;
 
     for file in std::fs::read_dir(".").unwrap() {
         println!("Detected {:#?} in directory", file.as_ref().unwrap().file_name());
@@ -82,6 +85,9 @@ pub fn prep_dir() {
             }
             "shops.json" => {
                 shops_exists = true;
+            }
+            "log.txt" => {
+                log_exists = true;
             }
             _ => break,
         }
@@ -101,4 +107,21 @@ pub fn prep_dir() {
         println!("Config file does not exist, creating it");
         config::gen_config();
     }
+
+    if !log_exists {
+        println!("Log file does not exist, creating it");
+        std::fs::File::create(".\\log.txt").expect("Could not create money file");
+    }
+}
+
+pub async fn log(text: &String, ctx: &Context)
+{
+    let file_text = std::fs::read_to_string(".\\log.txt").unwrap();
+
+    let channel = ctx.http.get_channel(get_config().output_channel_id).await.unwrap().guild().unwrap();
+    channel.send_message(ctx, |m| m.content(text)).await.unwrap();
+
+    let write_text = format!("{}\n{}\n", file_text, text);
+
+    std::fs::write(".\\log.txt", write_text).expect("Could not log to file");
 }

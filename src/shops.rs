@@ -346,6 +346,8 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 user.dm(ctx, |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
 
                 println!("{} bought {} from {} for ${}", msg.author.name, shop_item.name, msg.mentions[0].name, shop_item.price);
+
+                log(&format!("{} bought {} from {} for ${} at {}", msg.author.name, shop_item.name, msg.mentions[0].name, shop_item.price, chrono::Local::now().format("%Y-%m-%d][%H:%M:%S")), ctx).await;
             }
             else {
                 dm.send_message(ctx, |m| m.content("Cancelled buy order")).await?;
