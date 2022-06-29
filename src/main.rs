@@ -1,28 +1,18 @@
 // Branch using Poise for commands
 
+use poise::PrefixFrameworkOptions;
 use qc_bot::*;
 
 use serenity::async_trait;
-use serenity::framework::standard::macros::{command, group};
-use serenity::framework::standard::{CommandResult, StandardFramework};
 use serenity::model::prelude::*;
 use serenity::prelude::*;
 use serenity::utils::colours;
 
-use crate::money::BAL_COMMAND;
-use crate::money::PAY_COMMAND;
-use crate::money::REDEEM_COMMAND;
-use crate::money::TAX_COMMAND;
-use crate::money::TRIVIA_COMMAND;
-use crate::money::LEADERBOARD_COMMAND;
-use crate::shops::ADD_ITEM_COMMAND;
-use crate::shops::REMOVE_ITEM_COMMAND;
-use crate::shops::ITEMS_COMMAND;
-use crate::shops::BUY_COMMAND;
+type Error = Box<dyn std::error::Error + Send + Sync>;
+type Context<'a> = poise::Context<'a, Data, Error>;
 
-#[group]
-#[commands(start_game, tax, bal, pay, trivia, redeem, help, leaderboard, add_item, remove_item, items, buy)]
-struct General;
+// User data, which is stored and accessible in all command invocations
+struct Data {}
 
 struct Handler;
 
@@ -37,38 +27,55 @@ async fn main() {
     //Init
     file_sys::prep_dir();
 
-    let framework = StandardFramework::new()
-        .configure(|c| c.prefix(config::get_config().prefix))
-        .group(&GENERAL_GROUP);
-
-    // Login with a bot token from the environment
     let token = config::get_config().token;
     let intents = GatewayIntents::non_privileged()
         | GatewayIntents::MESSAGE_CONTENT
-        | GatewayIntents::GUILD_MESSAGES;
-    let mut client = Client::builder(token, intents)
-        .event_handler(Handler)
-        .framework(framework)
-        .await
-        .expect("Error creating client");
+        | GatewayIntents::GUILD_MESSAGES
+        | GatewayIntents::all();
 
-    // start listening for events by starting a single shard
-    if let Err(why) = client.start().await {
-        println!("An error occurred while running the client: {:?}", why);
-    }
+    let framework = poise::Framework::build()
+        .options(poise::FrameworkOptions {
+            // Register commands
+            commands: vec![register(), help(), age()],
+
+            prefix_options: PrefixFrameworkOptions {
+                prefix: Some(config::get_config().prefix),
+                mention_as_prefix: true,
+                execute_untracked_edits: true,
+                execute_self_messages: false,
+                ignore_bots: true,
+                case_insensitive_commands: true,
+                ..Default::default()
+            },
+            ..Default::default()
+        })
+        .token(token)
+        .intents(intents)
+        .user_data_setup(move |_ctx, _ready, _framework| Box::pin(async move { Ok(Data {}) }));
+
+    framework.run().await.unwrap();
 }
 
-#[command]
-async fn start_game(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.reply(ctx, format!("Starting game with mentioned players"))
-        .await?;
-
+#[poise::command(prefix_command)]
+async fn register(ctx: Context<'_>) -> Result<(), Error> {
+    poise::builtins::register_application_commands_buttons(ctx).await?;
     Ok(())
 }
 
-#[command]
-async fn help(ctx: &Context, msg: &Message) -> CommandResult {
-    msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
+#[poise::command(slash_command, prefix_command)]
+async fn age(
+    ctx: Context<'_>,
+    #[description = "Selected user"] user: Option<User>,
+) -> Result<(), Error> {
+    let u = user.as_ref().unwrap_or(ctx.author());
+    let response = format!("{}'s account was created at {}", u.name, u.created_at());
+    ctx.say(response).await?;
+    Ok(())
+}
+
+#[poise::command(prefix_command, slash_command)]
+async fn help(ctx: Context<'_>) -> Result<(), Error> {
+    ctx.send(|m| {
         m.content("")
         .embed(|e| {
             e.title("Help Menu (Note: Prefix in this is --, but it may be different)")
