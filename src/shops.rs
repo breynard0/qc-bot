@@ -1,29 +1,37 @@
+use crate::*;
 use std::time::SystemTime;
 
-use serenity::framework::standard::macros::{command};
-use serenity::framework::standard::{CommandResult, Args};
-use serenity::model::prelude::*;
-use serenity::prelude::*;
-use serenity::utils::colours;
+use crate::file_sys::{
+    de_shops, ser_shops, CommandOutput, Context, MoneyUser, MoneyUsers, ShopItem, ShopUser, log,
+};
 
-use crate::{file_sys::{*, self}};
+use futures::{Stream, StreamExt};
+use serenity::model::prelude::*;
+use serenity::utils::colours;
 
 pub fn get_shop(username: &String) -> ShopUser {
     let mut data = de_shops();
 
-    let mut shop_user = ShopUser { items: Vec::new(), user: username.clone() };
+    let mut shop_user = ShopUser {
+        items: Vec::new(),
+        user: username.clone(),
+    };
 
-    if data.users.iter().position(|s| &s.user == username).is_none() {
+    if data
+        .users
+        .iter()
+        .position(|s| &s.user == username)
+        .is_none()
+    {
         data.users.push(shop_user.clone());
         data.usernames.push(username.clone());
     }
 
     let pos = data.users.iter().position(|s| &s.user == username).unwrap();
 
-    if data.usernames.contains(&username) { 
+    if data.usernames.contains(&username) {
         shop_user = data.users[pos].clone();
     }
-
 
     // Publish to data
     if data.usernames.contains(&username) {
@@ -38,16 +46,21 @@ pub fn get_shop(username: &String) -> ShopUser {
     shop_user
 }
 
-#[command]
-async fn add_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let name = args.single::<String>()?;
-    let price = args.single::<i32>()?;
-    let emoji = args.single::<String>()?;
-
-    let username = &msg.author.name;
+/// Add an item to your shop
+#[poise::command(slash_command)]
+pub async fn add_item(
+    ctx: Context<'_>,
+    #[description = "Name of item"] name: String,
+    #[description = "Price of item"] price: i32,
+    #[description = "Emoji for item"] emoji: String,
+) -> CommandOutput {
+    let username = &ctx.author().name;
     let mut data = de_shops();
 
-    let mut shop_user = ShopUser { items: Vec::new(), user: username.clone() };
+    let mut shop_user = ShopUser {
+        items: Vec::new(),
+        user: username.clone(),
+    };
 
     if data.users.iter().position(|s| &s.user == username).is_none() {
         data.users.push(shop_user.clone());
@@ -56,16 +69,24 @@ async fn add_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
     let pos = data.users.iter().position(|s| &s.user == username).unwrap();
 
-    if data.usernames.contains(&username) { 
+    if data.usernames.contains(&username) {
         shop_user = data.users[pos].clone();
     }
 
-    if shop_user.clone().items.contains(&ShopItem{name: name.clone(), price, emoji: emoji.clone()}) {
-        msg.reply(ctx, "Add item failed, your shop already contains an item with the same name!").await?;
+    if shop_user.clone().items.contains(&ShopItem {
+        name: name.clone(),
+        price,
+        emoji: emoji.clone(),
+    }) {
+        ctx.say("Add item failed, your shop already contains an item with the same name!")
+            .await?;
         return Ok(());
-    }
-    else {
-        shop_user.items.push(ShopItem{name: name.clone(), price, emoji});
+    } else {
+        shop_user.items.push(ShopItem {
+            name: name.clone(),
+            price,
+            emoji,
+        });
     }
 
     // Publish to data
@@ -79,44 +100,59 @@ async fn add_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult
 
     ser_shops(data);
 
-    msg.reply(ctx, format!("Added item '{}' to your shop!", name)).await?;
+    ctx.say(format!("Added item '{}' to your shop!", name))
+        .await?;
 
     Ok(())
 }
 
-#[command]
-async fn remove_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let name = args.single::<String>()?;
-
-    let username = &msg.author.name;
+/// Remove an item from your shop
+#[poise::command(slash_command)]
+pub async fn remove_item(
+    ctx: Context<'_>,
+    #[description = "Name of item to remove"]
+    #[autocomplete = "autocomplete_item"]
+    name: String,
+) -> CommandOutput {
+    let username = &ctx.author().name;
     let mut data = de_shops();
 
-    let mut shop_user = ShopUser { items: Vec::new(), user: username.clone() };
+    let mut shop_user = ShopUser {
+        items: Vec::new(),
+        user: username.clone(),
+    };
 
-    if data.users.iter().position(|s| &s.user == username).is_none() {
+    if data
+        .users
+        .iter()
+        .position(|s| &s.user == username)
+        .is_none()
+    {
         data.users.push(shop_user.clone());
         data.usernames.push(username.clone());
     }
 
     let pos = data.users.iter().position(|s| &s.user == username).unwrap();
 
-    if data.usernames.contains(&username) { 
+    if data.usernames.contains(&username) {
         shop_user = data.users[pos].clone();
     }
 
     let mut found = false;
     for i in shop_user.items.clone() {
         if i.name == name {
-            shop_user.items.remove(shop_user.items.iter().position(|s| s == &i).unwrap());
+            shop_user
+                .items
+                .remove(shop_user.items.iter().position(|s| s == &i).unwrap());
             found = true;
         }
     }
 
     if !found {
-        msg.reply(ctx, format!("Your shop does not have item '{}'", name)).await?;
-    }
-    else {
-        msg.reply(ctx, format!("Removed item '{}'", name)).await?;
+        ctx.say(format!("Your shop does not have item '{}'", name))
+            .await?;
+    } else {
+        ctx.say(format!("Removed item '{}'", name)).await?;
     }
 
     // Publish to data
@@ -133,16 +169,15 @@ async fn remove_item(ctx: &Context, msg: &Message, mut args: Args) -> CommandRes
     Ok(())
 }
 
-#[command]
-async fn items(ctx: &Context, msg: &Message) -> CommandResult {
-    let mut _user = ShopUser { items: Vec::new(), user: String::new() };
-    
-    if msg.mentions.is_empty() {
-        _user = get_shop(&msg.author.name.to_string());
-    }
-    else {
-        _user = get_shop(&msg.mentions[0].name.to_string());
-    }
+/// See what items a shops has
+#[poise::command(slash_command)]
+pub async fn items(ctx: Context<'_>, #[description = "User to get items"] user: User) -> CommandOutput {
+    let mut _user = ShopUser {
+        items: Vec::new(),
+        user: String::new(),
+    };
+
+    _user = get_shop(&user.name.to_string());
 
     let mut content = "".to_string();
 
@@ -151,47 +186,75 @@ async fn items(ctx: &Context, msg: &Message) -> CommandResult {
     }
 
     if _user.items.is_empty() {
-        msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
-            m.content("")
-            .embed(|e| {
+        ctx.send(|m| {
+            m.content("").embed(|e| {
                 e.title(format!("{}'s shop", _user.user))
-                .field("Items:", "There are no items in this shop", true)
-                .colour(colours::roles::BLUE)
+                    .field("Items:", "There are no items in this shop", true)
+                    .colour(colours::roles::BLUE)
+            })
+        })
+        .await?;
+    } else {
+        ctx.send(|m| {
+            m.content("").embed(|e| {
+                e.title(format!("{}'s shop", _user.user))
+                    .field("Items:", content, true)
+                    .colour(colours::roles::BLUE)
             })
         })
         .await?;
     }
-    else {
-        msg.channel(ctx).await.unwrap().guild().unwrap().send_message(ctx, |m| {
-            m.content("")
-            .embed(|e| {
-                e.title(format!("{}'s shop", _user.user))
-                .field("Items:", content, true)
-                .colour(colours::roles::BLUE)
-            })
-        })
-        .await?;
-    }
-    
-    
+
     Ok(())
 }
 
-#[command]
-async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
-    let _name = args.single::<String>()?;
-    let item = args.single::<String>()?;
+// Item buy autocomplete
+async fn autocomplete_item(_ctx: Context<'_>, partial: String) -> impl Stream<Item = String> {
 
-    if msg.mentions.is_empty() {
-        msg.reply(ctx, "Please specify a user in the first argument").await?;
-        return Ok(())
+    let data = de_shops();
+
+    let mut items: Vec<&ShopItem> = Vec::new();
+    for su in data.users.iter() {
+        for i in &su.items {
+            items.push(i);
+        }
     }
 
-    let user = msg.mentions[0].clone();
-    let author = &msg.author;
+    let mut dummy: Vec<String> = Vec::new();
+    for i in items.clone() {
+        dummy.push(format!("{} {}, ${}", i.emoji, i.name, i.price));
+    }
+
+    let mut content: Vec<String> = Vec::new();
+    for i in items.clone() {
+        content.push(i.name.clone());
+    }
+
+    futures::stream::iter(dummy.clone())
+        .filter(move |name| futures::future::ready(name.starts_with(&partial)))
+        .map(move |name| content[dummy.iter().position(|s| s == &name).unwrap()].clone())
+}
+
+/// Buy an item from someone
+#[poise::command(slash_command)]
+pub async fn buy(ctx: Context<'_>,
+    #[description = "User to buy items from"]
+    user: User,
+    #[description = "Item to buy"]
+    #[autocomplete = "autocomplete_item"]
+    item: String
+) -> CommandOutput {
+    let _name = user.clone().name;
+
+    let user = &user;
+    let author = ctx.author();
 
     let shop = get_shop(&user.name);
-    let mut shop_item = ShopItem { name: String::new(), emoji: String::new(), price: 0 };
+    let mut shop_item = ShopItem {
+        name: String::new(),
+        emoji: String::new(),
+        price: 0,
+    };
 
     let mut found = false;
     for i in shop.items {
@@ -202,33 +265,29 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
     }
 
     if !found {
-        msg.reply(ctx, "Could not find item specified in second argument. Make sure the item name is spelled correctly (this is case sensitive!) and it is in the right command spot").await?;
-        return Ok(())
+        ctx.say("Could not find item specified in second argument. Make sure the item name is spelled correctly (this is case sensitive!) and it is in the right command spot").await?;
+        return Ok(());
     }
 
-    if msg.mentions[0].name == msg.author.name {
-        msg.reply(ctx, "You can't buy your own thing!").await?;
-        return Ok(())
+    if user.name == ctx.author().name {
+        ctx.say("You can't buy your own thing!").await?;
+        return Ok(());
     }
 
-    let dm = author.create_dm_channel(ctx).await?;
+    let dm = author.create_dm_channel(ctx.discord()).await?;
     let content = format!("Please verify you would like to buy {} {} for ${} by typing '_QC' below. Type anything else to cancel this", 
     shop_item.emoji, 
     shop_item.name, 
     shop_item.price);
-    dm.send_message(ctx, |m| m.content(content)).await?;
+    dm.send_message(ctx.discord(), |m| m.content(content)).await?;
 
     let mut answered = false;
-    let last_msg = &dm
-    .messages(ctx, |retriever| retriever.limit(1))
-    .await?[0];
+    let last_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
 
     while !answered {
         std::thread::sleep(std::time::Duration::from_millis(200));
 
-        let cur_msg = &dm
-        .messages(ctx, |retriever| retriever.limit(1))
-        .await?[0];
+        let cur_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
 
         if cur_msg.content.is_empty() && cur_msg.author.bot {
             continue;
@@ -236,8 +295,8 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
 
         if cur_msg.content != last_msg.content {
             answered = true;
-            
-            let dm_msg = &dm.messages(ctx, |retriever| retriever.limit(1)).await?[0];
+
+            let dm_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
 
             if dm_msg.content == "_QC" {
                 //Money
@@ -251,7 +310,7 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 };
 
                 if amount < 0 {
-                    msg.reply(ctx, "You can't take money, scammer!").await?;
+                    ctx.say("You can't take money, scammer!").await?;
                     return Ok(());
                 }
 
@@ -262,18 +321,17 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 }
 
                 if amount > sender_data.money {
-                    dm.send_message(
-                        ctx,
-                        |m| m.content(format!(
+                    dm.send_message(ctx.discord(), |m| {
+                        m.content(format!(
                             "You don't have enough money for this! Missing: ${}",
                             amount - sender_data.money
-                        )),
-                    )
+                        ))
+                    })
                     .await?;
                     return Ok(());
                 }
 
-                let target = &msg.mentions[0];
+                let target = user;
                 let mut target_data: MoneyUser = MoneyUser {
                     user: "".to_string(),
                     money: 100,
@@ -341,16 +399,30 @@ async fn buy(ctx: &Context, msg: &Message, mut args: Args) -> CommandResult {
                 file_sys::ser_money(data);
 
                 // Notification
-                dm.send_message(ctx, |m| m.content("Buy order completed! Seller has been notified and should provide your service. If you have been scammed, DM @Siliwolf to help this get sorted out")).await?;
+                dm.send_message(ctx.discord(), |m| m.content("Buy order completed! Seller has been notified and should provide your service. If you have been scammed, DM @Siliwolf to help this get sorted out")).await?;
 
-                user.dm(ctx, |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
+                user.dm(ctx.discord(), |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
 
-                println!("{} bought {} from {} for ${}", msg.author.name, shop_item.name, msg.mentions[0].name, shop_item.price);
+                println!(
+                    "{} bought {} from {} for ${}",
+                    ctx.author().name, shop_item.name, user.name, shop_item.price
+                );
 
-                log(&format!("{} bought {} from {} for ${} at {}", msg.author.name, shop_item.name, msg.mentions[0].name, shop_item.price, chrono::Local::now().format("%Y-%m-%d][%H:%M:%S")), ctx).await;
-            }
-            else {
-                dm.send_message(ctx, |m| m.content("Cancelled buy order")).await?;
+                log(
+                    &format!(
+                        "{} bought {} from {} for ${} at {}",
+                        ctx.author().name,
+                        shop_item.name,
+                        user.name,
+                        shop_item.price,
+                        chrono::Local::now().format("%Y-%m-%d][%H:%M:%S")
+                    ),
+                    ctx
+                )
+                .await;
+            } else {
+                dm.send_message(ctx.discord(), |m| m.content("Cancelled buy order"))
+                    .await?;
             }
         }
     }

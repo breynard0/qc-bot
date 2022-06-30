@@ -1,6 +1,13 @@
-use serenity::client::Context;
+use poise::serenity_prelude::ChannelId;
 
-use crate::{*, config::get_config};
+use crate::*;
+
+pub type Error = Box<dyn std::error::Error + Send + Sync>;
+pub type Context<'a> = poise::Context<'a, Data, Error>;
+pub type CommandOutput = Result<(), Error>;
+
+// User data, which is stored and accessible in all command invocations
+pub struct Data {}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MoneyUser {
@@ -19,7 +26,7 @@ pub struct MoneyUsers {
 pub struct ShopItem {
     pub name: String,
     pub price: i32,
-    pub emoji: String
+    pub emoji: String,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -75,7 +82,10 @@ pub fn prep_dir() {
     let mut log_exists = false;
 
     for file in std::fs::read_dir(".").unwrap() {
-        println!("Detected {:#?} in directory", file.as_ref().unwrap().file_name());
+        println!(
+            "Detected {:#?} in directory",
+            file.as_ref().unwrap().file_name()
+        );
         match file.unwrap().file_name().to_str().unwrap() {
             "money.json" => {
                 money_exists = true;
@@ -114,12 +124,24 @@ pub fn prep_dir() {
     }
 }
 
-pub async fn log(text: &String, ctx: &Context)
-{
+pub async fn log(text: &String, ctx: Context<'_>) {
     let file_text = std::fs::read_to_string(".\\log.txt").unwrap();
 
-    let channel = ctx.http.get_channel(get_config().output_channel_id).await.unwrap().guild().unwrap();
-    channel.send_message(ctx, |m| m.content(text)).await.unwrap();
+    let channel = &ctx
+        .guild()
+        .unwrap()
+        .channels
+        .get(&ChannelId {
+            0: config::get_config().output_channel_id,
+        })
+        .unwrap()
+        .clone()
+        .guild()
+        .unwrap();
+    channel
+        .send_message(&ctx.discord(), |m| m.content(text))
+        .await
+        .unwrap();
 
     let write_text = format!("{}\n{}\n", file_text, text);
 
