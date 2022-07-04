@@ -5,7 +5,7 @@ use rand::prelude::*;
 use crate::*;
 use crate::{file_sys::{CommandOutput, Context, de_lottery}, file_sys::*};
 
-/// Spent $100 to enter the lottery! Winner gets
+/// Spent $100 to enter the lottery! Winner gets all the money spent
 #[poise::command(slash_command, prefix_command)]
 pub async fn lottery(
     ctx: Context<'_>

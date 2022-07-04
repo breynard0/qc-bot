@@ -87,6 +87,7 @@ async fn help(ctx: Context<'_>) -> CommandOutput {
             **trivia:** *Get a trivia question. Costs $20. Usage: --trivia*\n
             **redeem:** *Redeem your daily reward. Usage: --redeem*\n
             **leaderboard:** *Show the top five richest users. Usage: --leaderboard*\n
+            **lottery:** *Enter the lottery. Costs $100. Usage: --lotter*\n
             ", false)
 
             .field("**Economy Shop Commands**", "**add_item:** *Add an item to your shop. Only supports Discord built-in emojis. Usage: --add_item <name> <price> <emoji>*\n
