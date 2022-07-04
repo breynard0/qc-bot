@@ -43,7 +43,8 @@ async fn main() {
                 shops::add_item(),
                 shops::remove_item(),
                 shops::items(),
-                shops::buy()
+                shops::buy(),
+                lottery::lottery()
             ],
 
             prefix_options: PrefixFrameworkOptions {

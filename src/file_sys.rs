@@ -1,4 +1,4 @@
-use poise::serenity_prelude::ChannelId;
+use poise::serenity_prelude::{ChannelId, User};
 
 use crate::*;
 
@@ -8,6 +8,12 @@ pub type CommandOutput = Result<(), Error>;
 
 // User data, which is stored and accessible in all command invocations
 pub struct Data {}
+
+#[derive(Debug, serde::Serialize, serde::Deserialize)]
+pub struct LotterySave {
+    pub users: Vec<User>,
+    pub money: i32
+}
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
 pub struct MoneyUser {
@@ -58,6 +64,23 @@ pub fn de_money() -> MoneyUsers {
     }
 }
 
+pub fn ser_lottery(data: LotterySave) {
+    let json: String = serde_json::to_string(&data).expect("Could not parse data");
+
+    std::fs::write(".\\lottery.json", json).expect("Could not write to money file");
+}
+
+pub fn de_lottery() -> LotterySave {
+    if std::fs::read(".\\lottery.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string(".\\lottery.json").unwrap().as_str()).unwrap()
+    } else {
+        LotterySave {
+            users: [].to_vec(),
+            money: 0
+        }
+    }
+}
+
 pub fn ser_shops(data: ShopUsers) {
     let json: String = serde_json::to_string(&data).expect("Could not parse data");
 
@@ -80,6 +103,7 @@ pub fn prep_dir() {
     let mut config_exists = false;
     let mut shops_exists = false;
     let mut log_exists = false;
+    let mut lottery_exists = false;
 
     for file in std::fs::read_dir(".").unwrap() {
         println!(
@@ -98,6 +122,9 @@ pub fn prep_dir() {
             }
             "log.txt" => {
                 log_exists = true;
+            }
+            "lottery.json" => {
+                lottery_exists = true;
             }
             _ => break,
         }
@@ -121,6 +148,11 @@ pub fn prep_dir() {
     if !log_exists {
         println!("Log file does not exist, creating it");
         std::fs::File::create(".\\log.txt").expect("Could not create money file");
+    }
+
+    if !lottery_exists {
+        println!("Lottery file does not exist, creating it");
+        std::fs::File::create(".\\lottery.json").expect("Could not create money file");
     }
 }
 
