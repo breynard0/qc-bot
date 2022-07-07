@@ -44,6 +44,7 @@ async fn main() {
                 shops::remove_item(),
                 shops::items(),
                 shops::buy(),
+                shops::reset_shops_channel(),
                 lottery::lottery()
             ],
 
@@ -87,12 +88,13 @@ async fn help(ctx: Context<'_>) -> CommandOutput {
             **trivia:** *Get a trivia question. Costs $20. Usage: --trivia*\n
             **redeem:** *Redeem your daily reward. Usage: --redeem*\n
             **leaderboard:** *Show the top five richest users. Usage: --leaderboard*\n
-            **lottery:** *Enter the lottery. Costs $100. Usage: --lotter*\n
+            **lottery:** *Enter the lottery. Costs $100. Usage: --lottery*\n
             ", false)
 
             .field("**Economy Shop Commands**", "**add_item:** *Add an item to your shop. Only supports Discord built-in emojis. Usage: --add_item <name> <price> <emoji>*\n
             **remove_item:** *Removes an item from your shop. Usage: --remove_item <name>*\n
             **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
+            **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*
             **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*", false)
             .colour(colours::roles::BLUE)
         })

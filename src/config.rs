@@ -3,6 +3,7 @@ pub struct Config {
     pub token: String,
     pub prefix: String,
     pub output_channel_id: u64,
+    pub shops_channel_id: u64,
     pub admin_whitelist: Vec<u64>,
     pub trivia_question: Vec<Trivia>,
 }
@@ -13,6 +14,7 @@ impl Config {
             token: String::new(),
             prefix: "--".to_string(),
             output_channel_id: 0,
+            shops_channel_id: 0,
             admin_whitelist: Vec::new(),
             trivia_question: [].to_vec(),
         }

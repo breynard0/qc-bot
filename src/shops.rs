@@ -46,6 +46,55 @@ pub fn get_shop(username: &String) -> ShopUser {
     shop_user
 }
 
+pub async fn reset_shops(ctx: Context<'_>) {
+    let channel = &ctx
+        .guild()
+        .unwrap()
+        .channels
+        .get(&ChannelId {
+            0: config::get_config().shops_channel_id,
+        })
+        .unwrap()
+        .clone()
+        .guild()
+        .unwrap();
+
+    let del_msgs = channel.messages(ctx.discord(), |r| r.limit(100)).await.unwrap();
+    for msg in del_msgs {
+        msg.delete(ctx.discord()).await.expect("Message does not exist");
+    }
+
+    let data = de_shops();
+
+    for su in data.users {
+        let mut content = "".to_string();
+
+            for i in su.clone().items {
+                content.push_str(format!("{} {}: ${}\n", i.emoji, i.name, i.price).as_str());
+            }
+
+            if su.items.is_empty() {
+                channel.send_message(ctx.discord(), |m| {
+                    m.content("").embed(|e| {
+                        e.title(format!("{}'s shop", su.user))
+                            .field("Items:", "There are no items in this shop", true)
+                            .colour(colours::roles::BLUE)
+                    })
+                })
+                .await.unwrap();
+            } else {
+                channel.send_message(ctx.discord(), |m| {
+                    m.content("").embed(|e| {
+                        e.title(format!("{}'s shop", su.user))
+                            .field("Items:", content, true)
+                            .colour(colours::roles::BLUE)
+                    })
+                })
+                .await.unwrap();
+        }
+    }
+}
+
 /// Add an item to your shop
 #[poise::command(slash_command)]
 pub async fn add_item(
@@ -102,6 +151,8 @@ pub async fn add_item(
 
     ctx.say(format!("Added item '{}' to your shop!", name))
         .await?;
+
+    reset_shops(ctx).await;
 
     Ok(())
 }
@@ -165,6 +216,8 @@ pub async fn remove_item(
     data.usernames.push(username.to_string());
 
     ser_shops(data);
+
+    reset_shops(ctx).await;
 
     Ok(())
 }
@@ -426,6 +479,14 @@ pub async fn buy(ctx: Context<'_>,
             }
         }
     }
+
+    Ok(())
+}
+
+/// Reset shops in the shops channel
+#[poise::command(slash_command)]
+pub async fn reset_shops_channel(ctx: Context<'_>,) -> CommandOutput {
+    reset_shops(ctx).await;
 
     Ok(())
 }

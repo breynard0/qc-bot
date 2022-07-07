@@ -363,9 +363,6 @@ struct Time {
 /// Redeem your daily reward
 #[poise::command(prefix_command, slash_command)]
 pub async fn redeem(ctx: Context<'_>) -> CommandOutput {
-    // TODO: Change amount of money you get based on how much you have, so people with less money can catch up
-
-    let amount = 60;
     let mut data: MoneyUsers = file_sys::de_money();
     let cooldown: f64 = 57600.0;
 
@@ -384,6 +381,20 @@ pub async fn redeem(ctx: Context<'_>) -> CommandOutput {
         if u.user == ctx.author().name.to_string() {
             mu = u;
         }
+    }
+
+    let mut amount = 60;
+
+    if mu.money < 10000 {
+        amount = 90;
+    }
+
+    if mu.money < 5000 {
+        amount = 100;
+    }
+
+    if mu.money < 1000 {
+        amount = 140;
     }
 
     if std::time::SystemTime::now()
