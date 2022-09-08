@@ -98,12 +98,27 @@ pub fn de_shops() -> ShopUsers {
     }
 }
 
+pub fn ser_memes(data: Vec<String>) {
+    let json: String = serde_json::to_string(&data).expect("Could not parse data");
+
+    std::fs::write(".\\memes.json", json).expect("Could not write to memes file");
+}
+
+pub fn de_memes() -> Vec<String> {
+    if std::fs::read(".\\memes.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string(".\\memes.json").unwrap().as_str()).unwrap()
+    } else {
+        Vec::new()
+    }
+}
+
 pub fn prep_dir() {
     let mut money_exists = false;
     let mut config_exists = false;
     let mut shops_exists = false;
     let mut log_exists = false;
     let mut lottery_exists = false;
+    let mut memes_exist = false;
 
     for file in std::fs::read_dir(".").unwrap() {
         println!(
@@ -126,6 +141,9 @@ pub fn prep_dir() {
             "lottery.json" => {
                 lottery_exists = true;
             }
+            "memes.json" => {
+                memes_exist = true;
+            }
             _ => break,
         }
     }
@@ -137,7 +155,7 @@ pub fn prep_dir() {
 
     if !shops_exists {
         println!("Shops file does not exist, creating it");
-        std::fs::File::create(".\\shops.json").expect("Could not create money file");
+        std::fs::File::create(".\\shops.json").expect("Could not create shop file");
     }
 
     if !config_exists {
@@ -147,12 +165,17 @@ pub fn prep_dir() {
 
     if !log_exists {
         println!("Log file does not exist, creating it");
-        std::fs::File::create(".\\log.txt").expect("Could not create money file");
+        std::fs::File::create(".\\log.txt").expect("Could not create log file");
     }
 
     if !lottery_exists {
         println!("Lottery file does not exist, creating it");
-        std::fs::File::create(".\\lottery.json").expect("Could not create money file");
+        std::fs::File::create(".\\lottery.json").expect("Could not create lottery file");
+    }
+
+    if !memes_exist {
+        println!("Memes file does not exist, creating it");
+        std::fs::File::create(".\\memes.json").expect("Could not create memes file");
     }
 }
 

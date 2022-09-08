@@ -60,8 +60,11 @@ pub async fn reset_shops(ctx: Context<'_>) {
         .unwrap();
 
     let del_msgs = channel.messages(ctx.discord(), |r| r.limit(100)).await.unwrap();
+    println!("{:?}", del_msgs);
     for msg in del_msgs {
-        msg.delete(ctx.discord()).await.expect("Message does not exist");
+        if msg.delete(ctx.discord()).await.is_ok() {
+            log(&"Removed messages from shops channel".to_string(), ctx).await;
+        }
     }
 
     let data = de_shops();
@@ -69,28 +72,28 @@ pub async fn reset_shops(ctx: Context<'_>) {
     for su in data.users {
         let mut content = "".to_string();
 
-            for i in su.clone().items {
-                content.push_str(format!("{} {}: ${}\n", i.emoji, i.name, i.price).as_str());
-            }
+        for i in su.clone().items {
+            content.push_str(format!("{} {}: ${}\n", i.emoji, i.name, i.price).as_str());
+        }
 
-            if su.items.is_empty() {
-                channel.send_message(ctx.discord(), |m| {
-                    m.content("").embed(|e| {
-                        e.title(format!("{}'s shop", su.user))
-                            .field("Items:", "There are no items in this shop", true)
-                            .colour(colours::roles::BLUE)
-                    })
+        if su.items.is_empty() {
+            channel.send_message(ctx.discord(), |m| {
+                m.content("").embed(|e| {
+                    e.title(format!("{}'s shop", su.user))
+                        .field("Items:", "There are no items in this shop", true)
+                        .colour(colours::roles::BLUE)
                 })
-                .await.unwrap();
-            } else {
-                channel.send_message(ctx.discord(), |m| {
-                    m.content("").embed(|e| {
-                        e.title(format!("{}'s shop", su.user))
-                            .field("Items:", content, true)
-                            .colour(colours::roles::BLUE)
-                    })
+            })
+            .await.unwrap();
+        } else {
+            channel.send_message(ctx.discord(), |m| {
+                m.content("").embed(|e| {
+                    e.title(format!("{}'s shop", su.user))
+                        .field("Items:", content, true)
+                        .colour(colours::roles::BLUE)
                 })
-                .await.unwrap();
+            })
+            .await.unwrap();
         }
     }
 }

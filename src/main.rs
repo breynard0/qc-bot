@@ -34,6 +34,7 @@ async fn main() {
             commands: vec![
                 register(),
                 help(),
+                lizard_government(),
                 money::bal(),
                 money::tax(),
                 money::trivia(),
@@ -45,7 +46,9 @@ async fn main() {
                 shops::items(),
                 shops::buy(),
                 shops::reset_shops_channel(),
-                lottery::lottery()
+                lottery::lottery(),
+                memes::upload_meme(),
+                memes::get_meme(),
             ],
 
             prefix_options: PrefixFrameworkOptions {
@@ -72,6 +75,18 @@ async fn register(ctx: Context<'_>) -> CommandOutput {
     Ok(())
 }
 
+/// lizard government
+#[poise::command(prefix_command, slash_command)]
+async fn lizard_government(ctx: Context<'_>) -> CommandOutput {
+    let mut i: usize = 0;
+    while i < 10 {
+        ctx.say("lizard government").await?;
+        i += 1;
+    }
+
+    Ok(())
+}
+
 /// Shows a help menu
 #[poise::command(prefix_command, slash_command)]
 async fn help(ctx: Context<'_>) -> CommandOutput {
@@ -80,7 +95,9 @@ async fn help(ctx: Context<'_>) -> CommandOutput {
         .embed(|e| {
             e.title("Help Menu (Note: Prefix in this is --, but it may be different)")
             .field("**General Commands**", "**help:** *Shows this embed. Usage: --help*\n
-            ", false)
+            **lizard_government:** *lizard government. Usage: --lizard_government*\n
+            ", 
+             false)
 
             .field("**Base Economy Commands**", "**tax:** *Add or remove money from a user. Admin command. Usage: --tax <amount> <@User>*\n
             **bal:** *Check how much money specified user has. Leave user field blank for yourself. Usage: --bal <@User>*\n
@@ -96,6 +113,13 @@ async fn help(ctx: Context<'_>) -> CommandOutput {
             **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
             **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*
             **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*", false)
+
+            .field("**Meme Commands**", "**get_meme:** *Print a meme to chat. Usage: --get_meme*\n
+            **upload_meme:** *Upload a meme. Usage: --upload_meme <link>*\n
+            **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
+            **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*
+            **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*", false)
+
             .colour(colours::roles::BLUE)
         })
     })
