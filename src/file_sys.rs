@@ -12,7 +12,7 @@ pub struct Data {}
 #[derive(Debug, serde::Serialize, serde::Deserialize)]
 pub struct LotterySave {
     pub users: Vec<User>,
-    pub money: i32
+    pub money: i32,
 }
 
 #[derive(serde::Serialize, serde::Deserialize, Clone, Debug, PartialEq, Eq, PartialOrd, Ord)]
@@ -76,7 +76,7 @@ pub fn de_lottery() -> LotterySave {
     } else {
         LotterySave {
             users: [].to_vec(),
-            money: 0
+            money: 0,
         }
     }
 }

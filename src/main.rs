@@ -35,6 +35,7 @@ async fn main() {
                 register(),
                 help(),
                 lizard_government(),
+                scrub::scrub(),
                 money::bal(),
                 money::tax(),
                 money::trivia(),
@@ -47,6 +48,7 @@ async fn main() {
                 shops::buy(),
                 shops::reset_shops_channel(),
                 lottery::lottery(),
+                lottery::trigger_lottery(),
                 memes::upload_meme(),
                 memes::get_meme(),
             ],
@@ -78,11 +80,10 @@ async fn register(ctx: Context<'_>) -> CommandOutput {
 /// lizard government
 #[poise::command(prefix_command, slash_command)]
 async fn lizard_government(ctx: Context<'_>) -> CommandOutput {
-    let mut i: usize = 0;
-    while i < 10 {
-        ctx.say("lizard government").await?;
-        i += 1;
-    }
+    ctx.say(
+        "https://cdn.discordapp.com/attachments/771082134533570644/1017873950530871357/unknown.png",
+    )
+    .await?;
 
     Ok(())
 }
@@ -110,15 +111,13 @@ async fn help(ctx: Context<'_>) -> CommandOutput {
 
             .field("**Economy Shop Commands**", "**add_item:** *Add an item to your shop. Only supports Discord built-in emojis. Usage: --add_item <name> <price> <emoji>*\n
             **remove_item:** *Removes an item from your shop. Usage: --remove_item <name>*\n
-            **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
-            **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*
-            **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*", false)
+            **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*\n
+            **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*\n
+            **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*\n", false)
 
             .field("**Meme Commands**", "**get_meme:** *Print a meme to chat. Usage: --get_meme*\n
             **upload_meme:** *Upload a meme. Usage: --upload_meme <link>*\n
-            **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*
-            **reset_shops_channel:** *Reset items in the shops channel. Usage: --reset_shops_channel*
-            **buy:** *Buy an item from another user. Usage: --buy <@User> <item_name>*", false)
+            **items:** *Check what items a shop has. Leave user field blank for yourself. Usage: --items <@User>*\n", false)
 
             .colour(colours::roles::BLUE)
         })

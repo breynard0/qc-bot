@@ -81,6 +81,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c4872d67bab6358e59559027aa3b9157c53d9358c51423c17554809a8858e0f8"
 
 [[package]]
+name = "caesar_cipher"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c1bba67735f146665deaeea9508acb570d77b5dfc6ac2ca4d83f415d4bacb0cf"
+
+[[package]]
 name = "cc"
 version = "1.0.73"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -724,6 +730,7 @@ dependencies = [
 name = "qc_bot"
 version = "0.1.0"
 dependencies = [
+ "caesar_cipher",
  "chrono",
  "futures",
  "poise",

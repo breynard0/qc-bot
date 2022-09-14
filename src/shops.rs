@@ -2,7 +2,7 @@ use crate::*;
 use std::time::SystemTime;
 
 use crate::file_sys::{
-    de_shops, ser_shops, CommandOutput, Context, MoneyUser, MoneyUsers, ShopItem, ShopUser, log,
+    de_shops, log, ser_shops, CommandOutput, Context, MoneyUser, MoneyUsers, ShopItem, ShopUser,
 };
 
 use futures::{Stream, StreamExt};
@@ -59,7 +59,10 @@ pub async fn reset_shops(ctx: Context<'_>) {
         .guild()
         .unwrap();
 
-    let del_msgs = channel.messages(ctx.discord(), |r| r.limit(100)).await.unwrap();
+    let del_msgs = channel
+        .messages(ctx.discord(), |r| r.limit(100))
+        .await
+        .unwrap();
     println!("{:?}", del_msgs);
     for msg in del_msgs {
         if msg.delete(ctx.discord()).await.is_ok() {
@@ -77,23 +80,27 @@ pub async fn reset_shops(ctx: Context<'_>) {
         }
 
         if su.items.is_empty() {
-            channel.send_message(ctx.discord(), |m| {
-                m.content("").embed(|e| {
-                    e.title(format!("{}'s shop", su.user))
-                        .field("Items:", "There are no items in this shop", true)
-                        .colour(colours::roles::BLUE)
+            channel
+                .send_message(ctx.discord(), |m| {
+                    m.content("").embed(|e| {
+                        e.title(format!("{}'s shop", su.user))
+                            .field("Items:", "There are no items in this shop", true)
+                            .colour(colours::roles::BLUE)
+                    })
                 })
-            })
-            .await.unwrap();
+                .await
+                .unwrap();
         } else {
-            channel.send_message(ctx.discord(), |m| {
-                m.content("").embed(|e| {
-                    e.title(format!("{}'s shop", su.user))
-                        .field("Items:", content, true)
-                        .colour(colours::roles::BLUE)
+            channel
+                .send_message(ctx.discord(), |m| {
+                    m.content("").embed(|e| {
+                        e.title(format!("{}'s shop", su.user))
+                            .field("Items:", content, true)
+                            .colour(colours::roles::BLUE)
+                    })
                 })
-            })
-            .await.unwrap();
+                .await
+                .unwrap();
         }
     }
 }
@@ -114,7 +121,12 @@ pub async fn add_item(
         user: username.clone(),
     };
 
-    if data.users.iter().position(|s| &s.user == username).is_none() {
+    if data
+        .users
+        .iter()
+        .position(|s| &s.user == username)
+        .is_none()
+    {
         data.users.push(shop_user.clone());
         data.usernames.push(username.clone());
     }
@@ -227,7 +239,10 @@ pub async fn remove_item(
 
 /// See what items a shops has
 #[poise::command(slash_command)]
-pub async fn items(ctx: Context<'_>, #[description = "User to get items"] user: User) -> CommandOutput {
+pub async fn items(
+    ctx: Context<'_>,
+    #[description = "User to get items"] user: User,
+) -> CommandOutput {
     let mut _user = ShopUser {
         items: Vec::new(),
         user: String::new(),
@@ -266,7 +281,6 @@ pub async fn items(ctx: Context<'_>, #[description = "User to get items"] user: 
 
 // Item buy autocomplete
 async fn autocomplete_item(_ctx: Context<'_>, partial: String) -> impl Stream<Item = String> {
-
     let data = de_shops();
 
     let mut items: Vec<&ShopItem> = Vec::new();
@@ -293,12 +307,12 @@ async fn autocomplete_item(_ctx: Context<'_>, partial: String) -> impl Stream<It
 
 /// Buy an item from someone
 #[poise::command(slash_command)]
-pub async fn buy(ctx: Context<'_>,
-    #[description = "User to buy items from"]
-    user: User,
+pub async fn buy(
+    ctx: Context<'_>,
+    #[description = "User to buy items from"] user: User,
     #[description = "Item to buy"]
     #[autocomplete = "autocomplete_item"]
-    item: String
+    item: String,
 ) -> CommandOutput {
     let _name = user.clone().name;
 
@@ -335,15 +349,20 @@ pub async fn buy(ctx: Context<'_>,
     shop_item.emoji, 
     shop_item.name, 
     shop_item.price);
-    dm.send_message(ctx.discord(), |m| m.content(content)).await?;
+    dm.send_message(ctx.discord(), |m| m.content(content))
+        .await?;
 
     let mut answered = false;
-    let last_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
+    let last_msg = &dm
+        .messages(ctx.discord(), |retriever| retriever.limit(1))
+        .await?[0];
 
     while !answered {
         std::thread::sleep(std::time::Duration::from_millis(200));
 
-        let cur_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
+        let cur_msg = &dm
+            .messages(ctx.discord(), |retriever| retriever.limit(1))
+            .await?[0];
 
         if cur_msg.content.is_empty() && cur_msg.author.bot {
             continue;
@@ -352,7 +371,9 @@ pub async fn buy(ctx: Context<'_>,
         if cur_msg.content != last_msg.content {
             answered = true;
 
-            let dm_msg = &dm.messages(ctx.discord(), |retriever| retriever.limit(1)).await?[0];
+            let dm_msg = &dm
+                .messages(ctx.discord(), |retriever| retriever.limit(1))
+                .await?[0];
 
             if dm_msg.content == "_QC" {
                 //Money
@@ -461,7 +482,10 @@ pub async fn buy(ctx: Context<'_>,
 
                 println!(
                     "{} bought {} from {} for ${}",
-                    ctx.author().name, shop_item.name, user.name, shop_item.price
+                    ctx.author().name,
+                    shop_item.name,
+                    user.name,
+                    shop_item.price
                 );
 
                 log(
@@ -473,7 +497,7 @@ pub async fn buy(ctx: Context<'_>,
                         shop_item.price,
                         chrono::Local::now().format("%Y-%m-%d][%H:%M:%S")
                     ),
-                    ctx
+                    ctx,
                 )
                 .await;
             } else {
@@ -488,7 +512,7 @@ pub async fn buy(ctx: Context<'_>,
 
 /// Reset shops in the shops channel
 #[poise::command(slash_command)]
-pub async fn reset_shops_channel(ctx: Context<'_>,) -> CommandOutput {
+pub async fn reset_shops_channel(ctx: Context<'_>) -> CommandOutput {
     reset_shops(ctx).await;
 
     Ok(())
