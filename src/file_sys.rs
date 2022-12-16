@@ -50,12 +50,12 @@ pub struct ShopUsers {
 pub fn ser_money(data: MoneyUsers) {
     let json: String = serde_json::to_string(&data).expect("Could not parse data");
 
-    std::fs::write(".\\money.json", json).expect("Could not write to money file");
+    std::fs::write("./money.json", json).expect("Could not write to money file");
 }
 
 pub fn de_money() -> MoneyUsers {
-    if std::fs::read(".\\money.json").unwrap().len() != 0 {
-        serde_json::from_str(&std::fs::read_to_string(".\\money.json").unwrap().as_str()).unwrap()
+    if std::fs::read("./money.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string("./money.json").unwrap().as_str()).unwrap()
     } else {
         MoneyUsers {
             users: [].to_vec(),
@@ -67,12 +67,12 @@ pub fn de_money() -> MoneyUsers {
 pub fn ser_lottery(data: LotterySave) {
     let json: String = serde_json::to_string(&data).expect("Could not parse data");
 
-    std::fs::write(".\\lottery.json", json).expect("Could not write to money file");
+    std::fs::write("./lottery.json", json).expect("Could not write to money file");
 }
 
 pub fn de_lottery() -> LotterySave {
-    if std::fs::read(".\\lottery.json").unwrap().len() != 0 {
-        serde_json::from_str(&std::fs::read_to_string(".\\lottery.json").unwrap().as_str()).unwrap()
+    if std::fs::read("./lottery.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string("./lottery.json").unwrap().as_str()).unwrap()
     } else {
         LotterySave {
             users: [].to_vec(),
@@ -84,12 +84,12 @@ pub fn de_lottery() -> LotterySave {
 pub fn ser_shops(data: ShopUsers) {
     let json: String = serde_json::to_string(&data).expect("Could not parse data");
 
-    std::fs::write(".\\shops.json", json).expect("Could not write to money file");
+    std::fs::write("./shops.json", json).expect("Could not write to money file");
 }
 
 pub fn de_shops() -> ShopUsers {
-    if std::fs::read(".\\shops.json").unwrap().len() != 0 {
-        serde_json::from_str(&std::fs::read_to_string(".\\shops.json").unwrap().as_str()).unwrap()
+    if std::fs::read("./shops.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string("./shops.json").unwrap().as_str()).unwrap()
     } else {
         ShopUsers {
             users: [].to_vec(),
@@ -101,12 +101,12 @@ pub fn de_shops() -> ShopUsers {
 pub fn ser_memes(data: Vec<String>) {
     let json: String = serde_json::to_string(&data).expect("Could not parse data");
 
-    std::fs::write(".\\memes.json", json).expect("Could not write to memes file");
+    std::fs::write("./memes.json", json).expect("Could not write to memes file");
 }
 
 pub fn de_memes() -> Vec<String> {
-    if std::fs::read(".\\memes.json").unwrap().len() != 0 {
-        serde_json::from_str(&std::fs::read_to_string(".\\memes.json").unwrap().as_str()).unwrap()
+    if std::fs::read("./memes.json").unwrap().len() != 0 {
+        serde_json::from_str(&std::fs::read_to_string("./memes.json").unwrap().as_str()).unwrap()
     } else {
         Vec::new()
     }
@@ -150,12 +150,12 @@ pub fn prep_dir() {
 
     if !money_exists {
         println!("Money file does not exist, creating it");
-        std::fs::File::create(".\\money.json").expect("Could not create money file");
+        std::fs::File::create("./money.json").expect("Could not create money file");
     }
 
     if !shops_exists {
         println!("Shops file does not exist, creating it");
-        std::fs::File::create(".\\shops.json").expect("Could not create shop file");
+        std::fs::File::create("./shops.json").expect("Could not create shop file");
     }
 
     if !config_exists {
@@ -165,22 +165,22 @@ pub fn prep_dir() {
 
     if !log_exists {
         println!("Log file does not exist, creating it");
-        std::fs::File::create(".\\log.txt").expect("Could not create log file");
+        std::fs::File::create("./log.txt").expect("Could not create log file");
     }
 
     if !lottery_exists {
         println!("Lottery file does not exist, creating it");
-        std::fs::File::create(".\\lottery.json").expect("Could not create lottery file");
+        std::fs::File::create("./lottery.json").expect("Could not create lottery file");
     }
 
     if !memes_exist {
         println!("Memes file does not exist, creating it");
-        std::fs::File::create(".\\memes.json").expect("Could not create memes file");
+        std::fs::File::create("./memes.json").expect("Could not create memes file");
     }
 }
 
 pub async fn log(text: &String, ctx: Context<'_>) {
-    let file_text = std::fs::read_to_string(".\\log.txt").unwrap();
+    let file_text = std::fs::read_to_string("./log.txt").unwrap();
 
     let channel = &ctx
         .guild()
@@ -194,11 +194,11 @@ pub async fn log(text: &String, ctx: Context<'_>) {
         .guild()
         .unwrap();
     channel
-        .send_message(&ctx.discord(), |m| m.content(text))
+        .send_message(&ctx, |m| m.content(text))
         .await
         .unwrap();
 
     let write_text = format!("{}\n{}\n", file_text, text);
 
-    std::fs::write(".\\log.txt", write_text).expect("Could not log to file");
+    std::fs::write("./log.txt", write_text).expect("Could not log to file");
 }

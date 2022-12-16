@@ -29,13 +29,13 @@ pub struct Trivia {
 
 pub fn get_config() -> Config {
     let config: Config =
-        toml::from_str(&std::fs::read_to_string(".\\config.toml").unwrap()).unwrap();
+        toml::from_str(&std::fs::read_to_string("./config.toml").unwrap()).unwrap();
     config
 }
 
 pub fn gen_config() {
-    std::fs::File::create(".\\config.toml").expect("Could not create money file");
+    std::fs::File::create("./config.toml").expect("Could not create money file");
 
     let config = Config::new();
-    std::fs::write(".\\config.toml", toml::to_string(&config).unwrap()).unwrap();
+    std::fs::write("./config.toml", toml::to_string(&config).unwrap()).unwrap();
 }

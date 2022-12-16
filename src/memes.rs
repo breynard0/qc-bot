@@ -32,3 +32,17 @@ pub async fn get_meme(ctx: Context<'_>) -> CommandOutput {
 
     Ok(())
 }
+<<<<<<< HEAD
+=======
+
+// AI generate a meme
+// #[poise::command(slash_command)]
+// pub async fn ai_meme(ctx: Context<'_>,
+// #[description = "What should the meme be about?"] subject: String,
+// ) -> CommandOutput {
+//     let mut memes = imgflip::Client::new().memes().await.unwrap();
+//     let meme = imgflip::CaptionBoxesRequestBuilder::new(template_id)
+
+//     Ok(())
+// }
+>>>>>>> 294792a (Commit from new machine)

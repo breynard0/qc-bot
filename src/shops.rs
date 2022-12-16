@@ -59,6 +59,7 @@ pub async fn reset_shops(ctx: Context<'_>) {
         .guild()
         .unwrap();
 
+<<<<<<< HEAD
     let del_msgs = channel
         .messages(ctx.discord(), |r| r.limit(100))
         .await
@@ -66,6 +67,12 @@ pub async fn reset_shops(ctx: Context<'_>) {
     println!("{:?}", del_msgs);
     for msg in del_msgs {
         if msg.delete(ctx.discord()).await.is_ok() {
+=======
+    let del_msgs = channel.messages(ctx, |r| r.limit(100)).await.unwrap();
+    println!("{:?}", del_msgs);
+    for msg in del_msgs {
+        if msg.delete(ctx).await.is_ok() {
+>>>>>>> 294792a (Commit from new machine)
             log(&"Removed messages from shops channel".to_string(), ctx).await;
         }
     }
@@ -81,7 +88,11 @@ pub async fn reset_shops(ctx: Context<'_>) {
 
         if su.items.is_empty() {
             channel
+<<<<<<< HEAD
                 .send_message(ctx.discord(), |m| {
+=======
+                .send_message(ctx, |m| {
+>>>>>>> 294792a (Commit from new machine)
                     m.content("").embed(|e| {
                         e.title(format!("{}'s shop", su.user))
                             .field("Items:", "There are no items in this shop", true)
@@ -92,7 +103,11 @@ pub async fn reset_shops(ctx: Context<'_>) {
                 .unwrap();
         } else {
             channel
+<<<<<<< HEAD
                 .send_message(ctx.discord(), |m| {
+=======
+                .send_message(ctx, |m| {
+>>>>>>> 294792a (Commit from new machine)
                     m.content("").embed(|e| {
                         e.title(format!("{}'s shop", su.user))
                             .field("Items:", content, true)
@@ -280,7 +295,14 @@ pub async fn items(
 }
 
 // Item buy autocomplete
+<<<<<<< HEAD
 async fn autocomplete_item(_ctx: Context<'_>, partial: String) -> impl Stream<Item = String> {
+=======
+async fn autocomplete_item<'a>(
+    _ctx: Context<'_>,
+    partial: &'a str,
+) -> impl Stream<Item = String> + 'a {
+>>>>>>> 294792a (Commit from new machine)
     let data = de_shops();
 
     let mut items: Vec<&ShopItem> = Vec::new();
@@ -344,6 +366,7 @@ pub async fn buy(
         return Ok(());
     }
 
+<<<<<<< HEAD
     let dm = author.create_dm_channel(ctx.discord()).await?;
     let content = format!("Please verify you would like to buy {} {} for ${} by typing '_QC' below. Type anything else to cancel this", 
     shop_item.emoji, 
@@ -356,13 +379,28 @@ pub async fn buy(
     let last_msg = &dm
         .messages(ctx.discord(), |retriever| retriever.limit(1))
         .await?[0];
+=======
+    let dm = author.create_dm_channel(ctx).await?;
+    let content = format!("Please verify you would like to buy {} {} for ${} by typing '_QC' below. Type anything else to cancel this", 
+    shop_item.emoji,
+    shop_item.name,
+    shop_item.price);
+    dm.send_message(ctx, |m| m.content(content)).await?;
+
+    let mut answered = false;
+    let last_msg = &dm.messages(ctx, |retriever| retriever.limit(1)).await?[0];
+>>>>>>> 294792a (Commit from new machine)
 
     while !answered {
         std::thread::sleep(std::time::Duration::from_millis(200));
 
+<<<<<<< HEAD
         let cur_msg = &dm
             .messages(ctx.discord(), |retriever| retriever.limit(1))
             .await?[0];
+=======
+        let cur_msg = &dm.messages(ctx, |retriever| retriever.limit(1)).await?[0];
+>>>>>>> 294792a (Commit from new machine)
 
         if cur_msg.content.is_empty() && cur_msg.author.bot {
             continue;
@@ -371,9 +409,13 @@ pub async fn buy(
         if cur_msg.content != last_msg.content {
             answered = true;
 
+<<<<<<< HEAD
             let dm_msg = &dm
                 .messages(ctx.discord(), |retriever| retriever.limit(1))
                 .await?[0];
+=======
+            let dm_msg = &dm.messages(ctx, |retriever| retriever.limit(1)).await?[0];
+>>>>>>> 294792a (Commit from new machine)
 
             if dm_msg.content == "_QC" {
                 //Money
@@ -398,7 +440,11 @@ pub async fn buy(
                 }
 
                 if amount > sender_data.money {
+<<<<<<< HEAD
                     dm.send_message(ctx.discord(), |m| {
+=======
+                    dm.send_message(ctx, |m| {
+>>>>>>> 294792a (Commit from new machine)
                         m.content(format!(
                             "You don't have enough money for this! Missing: ${}",
                             amount - sender_data.money
@@ -476,9 +522,15 @@ pub async fn buy(
                 file_sys::ser_money(data);
 
                 // Notification
+<<<<<<< HEAD
                 dm.send_message(ctx.discord(), |m| m.content("Buy order completed! Seller has been notified and should provide your service. If you have been scammed, DM @Siliwolf to help this get sorted out")).await?;
 
                 user.dm(ctx.discord(), |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
+=======
+                dm.send_message(ctx, |m| m.content("Buy order completed! Seller has been notified and should provide your service. If you have been scammed, DM @Siliwolf to help this get sorted out")).await?;
+
+                user.dm(ctx, |m| m.content(format!("{} has bought your shop item {} {} for ${}. Please follow through on whatever service you have promised, or refund their money", author.name, shop_item.emoji, shop_item.name, shop_item.price))).await?;
+>>>>>>> 294792a (Commit from new machine)
 
                 println!(
                     "{} bought {} from {} for ${}",
@@ -501,7 +553,11 @@ pub async fn buy(
                 )
                 .await;
             } else {
+<<<<<<< HEAD
                 dm.send_message(ctx.discord(), |m| m.content("Cancelled buy order"))
+=======
+                dm.send_message(ctx, |m| m.content("Cancelled buy order"))
+>>>>>>> 294792a (Commit from new machine)
                     .await?;
             }
         }

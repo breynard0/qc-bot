@@ -259,14 +259,14 @@ pub async fn trivia(ctx: Context<'_>) -> CommandOutput {
     ctx.say("Took $20 and sending a trivia question to your DMs now!")
         .await?;
 
-    let channel = sender.create_dm_channel(ctx.discord()).await?;
+    let channel = sender.create_dm_channel(ctx).await?;
 
     channel
-        .send_message(ctx.discord(), |b| b.content("Sending question..."))
+        .send_message(ctx, |b| b.content("Sending question..."))
         .await?;
 
     let channel_msg = &channel
-        .messages(ctx.discord(), |retriever| retriever.limit(1))
+        .messages(ctx, |retriever| retriever.limit(1))
         .await?[0];
     let mut answered = false;
 
@@ -277,7 +277,7 @@ pub async fn trivia(ctx: Context<'_>) -> CommandOutput {
         .clone();
 
     channel
-        .send_message(ctx.discord(), |m| {
+        .send_message(ctx, |m| {
             m.content("").tts(true).embed(|e| {
                 e.title("Write your answer in chat")
                     .description(question.question)
@@ -290,7 +290,7 @@ pub async fn trivia(ctx: Context<'_>) -> CommandOutput {
         std::thread::sleep(std::time::Duration::from_millis(200));
 
         let cur_msg = &channel
-            .messages(ctx.discord(), |retriever| retriever.limit(1))
+            .messages(ctx, |retriever| retriever.limit(1))
             .await?[0];
 
         if cur_msg.content.is_empty() && cur_msg.author.bot {
@@ -317,10 +317,7 @@ pub async fn trivia(ctx: Context<'_>) -> CommandOutput {
 
             if correct {
                 cur_msg
-                    .reply(
-                        ctx.discord(),
-                        "You got it right! Adding $30 to your account!",
-                    )
+                    .reply(ctx, "You got it right! Adding $30 to your account!")
                     .await?;
                 ctx.say(format!("{} got it right!", ctx.author().name))
                     .await?;
@@ -337,7 +334,7 @@ pub async fn trivia(ctx: Context<'_>) -> CommandOutput {
             } else {
                 cur_msg
                     .reply(
-                        ctx.discord(),
+                        ctx,
                         format!(
                             "Oh no! You didn't get it! Correct answer: {}",
                             question.answer
@@ -433,8 +430,8 @@ pub async fn redeem(ctx: Context<'_>) -> CommandOutput {
         };
 
         ctx.say(format!("You already redeemed your reward! You can redeem again in {} hours, {} minutes and {} seconds", 
-            duration.hours, 
-            duration.minutes, 
+            duration.hours,
+            duration.minutes,
             duration.seconds
         )).await?;
     }

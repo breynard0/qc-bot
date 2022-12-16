@@ -17,7 +17,7 @@ impl EventHandler for Handler {}
 #[tokio::main]
 async fn main() {
     //DEBUG
-    std::env::set_current_dir(".\\data").ok();
+    std::env::set_current_dir("./data").ok();
 
     //Init
     file_sys::prep_dir();
@@ -28,13 +28,14 @@ async fn main() {
         | GatewayIntents::GUILD_MESSAGES
         | GatewayIntents::all();
 
-    let framework = poise::Framework::build()
+    let framework = poise::Framework::builder()
         .options(poise::FrameworkOptions {
             // Register commands
             commands: vec![
                 register(),
                 help(),
                 lizard_government(),
+                spring_park(),
                 scrub::scrub(),
                 money::bal(),
                 money::tax(),
@@ -51,6 +52,7 @@ async fn main() {
                 lottery::trigger_lottery(),
                 memes::upload_meme(),
                 memes::get_meme(),
+                rules::rules(),
             ],
 
             prefix_options: PrefixFrameworkOptions {
@@ -66,7 +68,7 @@ async fn main() {
         })
         .token(token)
         .intents(intents)
-        .user_data_setup(move |_ctx, _ready, _framework| Box::pin(async move { Ok(Data {}) }));
+        .setup(move |_ctx, _ready, _framework| Box::pin(async move { Ok(Data {}) }));
 
     framework.run().await.unwrap();
 }
@@ -84,6 +86,15 @@ async fn lizard_government(ctx: Context<'_>) -> CommandOutput {
         "https://cdn.discordapp.com/attachments/771082134533570644/1017873950530871357/unknown.png",
     )
     .await?;
+
+    Ok(())
+}
+
+#[poise::command(prefix_command, slash_command)]
+async fn spring_park(ctx: Context<'_>) -> CommandOutput {
+    ctx.say(
+        "spring 🍉  park🧍 it 🛸 starts 👄 to 🕺 spark ✨ continues ☢️ on 🏳️ foreeeeeeever 🥔 on 🤼 dunkirk 🐯 street 🚙 we☠️ can't 🥸 be 🏵️ beat 🏆 we're 🕴️ not 👁️ just 💵 smart 🧠 we're 🐒  cleeeeeeeever 🤞 shiiiiiiiiine 🌟"
+    ).await?;
 
     Ok(())
 }

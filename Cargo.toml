@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [package]
 name = "qc_bot"
 version = "0.1.0"
@@ -16,3 +17,24 @@ chrono = "0.4.19"
 poise = "0.2.2"
 futures = "0.3.21"
 caesar_cipher = "0.1.1"
+=======
+[package]
+name = "qc_bot"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = { default-features = false, version = "0.11.2", features = ["builder", "cache", "chrono", "client", "gateway", "model", "http", "utils"] }
+tokio = { version = "1.19.2", features = ["full", "macros"] }
+serde_json = "1.0.81"
+serde = "1.0.137"
+toml = "0.5.9"
+rand = "0.8.5"
+chrono = "0.4.19"
+poise = "0.5.0"
+futures = "0.3.21"
+caesar_cipher = "0.1.1"
+imgflip = "0.1.0"
+>>>>>>> 294792a (Commit from new machine)
