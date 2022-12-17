@@ -29,3 +29,4 @@ data/memes.json
 data/money.json
 data/shops.json
 env/data/money.json
+Cargo.lock
