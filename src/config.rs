@@ -21,7 +21,7 @@ impl Config {
     }
 }
 
-#[derive(serde::Serialize, serde::Deserialize, Clone)]
+#[derive(serde::Serialize, serde::Deserialize, Clone, Default, PartialEq, PartialOrd)]
 pub struct Trivia {
     pub question: String,
     pub answer: String,

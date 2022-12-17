@@ -1,4 +1,7 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
+=======
+>>>>>>> 23a4b82 (Added support for OpenTDB for trivia questions)
 [package]
 name = "qc_bot"
 version = "0.1.0"
@@ -14,6 +17,7 @@ serde = "1.0.137"
 toml = "0.5.9"
 rand = "0.8.5"
 chrono = "0.4.19"
+<<<<<<< HEAD
 poise = "0.2.2"
 futures = "0.3.21"
 caesar_cipher = "0.1.1"
@@ -38,3 +42,11 @@ futures = "0.3.21"
 caesar_cipher = "0.1.1"
 imgflip = "0.1.0"
 >>>>>>> 294792a (Commit from new machine)
+=======
+poise = "0.5.0"
+futures = "0.3.21"
+caesar_cipher = "0.1.1"
+imgflip = "0.1.0"
+reqwest = {version = "0.11.13", features = ["blocking"]}
+opentdb = "1.0.0"
+>>>>>>> 23a4b82 (Added support for OpenTDB for trivia questions)

@@ -6,3 +6,4 @@ pub mod money;
 pub mod rules;
 pub mod scrub;
 pub mod shops;
+pub mod trivia;

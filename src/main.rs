@@ -39,7 +39,7 @@ async fn main() {
                 scrub::scrub(),
                 money::bal(),
                 money::tax(),
-                money::trivia(),
+                trivia::trivia(),
                 money::pay(),
                 money::redeem(),
                 money::leaderboard(),
