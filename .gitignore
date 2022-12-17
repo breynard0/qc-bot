@@ -22,3 +22,10 @@ Cargo.lock
 ./data/*
 ./data
 ./env
+data/config.toml
+data/log.txt
+data/lottery.json
+data/memes.json
+data/money.json
+data/shops.json
+env/data/money.json
