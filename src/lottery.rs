@@ -68,11 +68,7 @@ pub async fn lottery(ctx: Context<'_>) -> CommandOutput {
             data.money += 100;
             data.users.push(sender.clone());
 
-<<<<<<< HEAD
-            sender.dm(ctx.discord(), |m| m.content("You have entered the lottery! Draw will happen when enough people have entered.")).await?;
-=======
             sender.dm(ctx, |m| m.content("You have entered the lottery! Draw will happen when enough people have entered.")).await?;
->>>>>>> 294792a (Commit from new machine)
 
             if data.users.len() >= 5 {
                 let idx: usize = thread_rng().gen_range(0..=4);
@@ -80,11 +76,7 @@ pub async fn lottery(ctx: Context<'_>) -> CommandOutput {
 
                 for u in data.users.clone() {
                     if u.id.as_u64() == winner.id.as_u64() {
-<<<<<<< HEAD
-                        u.dm(ctx.discord(), |m| {
-=======
                         u.dm(ctx, |m| {
->>>>>>> 294792a (Commit from new machine)
                             m.content("You have won the lottery! Sending money to you...")
                         })
                         .await?;
@@ -121,11 +113,7 @@ pub async fn lottery(ctx: Context<'_>) -> CommandOutput {
                         money_data.users.push(mu.clone());
                         log(&format!("{} won the lottery", u.name), ctx).await;
                     } else {
-<<<<<<< HEAD
-                        u.dm(ctx.discord(), |m| {
-=======
                         u.dm(ctx, |m| {
->>>>>>> 294792a (Commit from new machine)
                             m.content(
                                 "The lottery was drawn and you didn't win. Better luck next time!",
                             )
@@ -180,11 +168,7 @@ pub async fn trigger_lottery(ctx: Context<'_>) -> CommandOutput {
 
     for u in data.users.clone() {
         if u.id.as_u64() == winner.id.as_u64() {
-<<<<<<< HEAD
-            u.dm(ctx.discord(), |m| {
-=======
             u.dm(ctx, |m| {
->>>>>>> 294792a (Commit from new machine)
                 m.content("You have won the lottery! Sending money to you...")
             })
             .await?;
@@ -221,11 +205,7 @@ pub async fn trigger_lottery(ctx: Context<'_>) -> CommandOutput {
             money_data.users.push(mu.clone());
             log(&format!("{} won the lottery", u.name), ctx).await;
         } else {
-<<<<<<< HEAD
-            u.dm(ctx.discord(), |m| {
-=======
             u.dm(ctx, |m| {
->>>>>>> 294792a (Commit from new machine)
                 m.content("The lottery was drawn and you didn't win. Better luck next time!")
             })
             .await?;

@@ -32,8 +32,6 @@ pub async fn get_meme(ctx: Context<'_>) -> CommandOutput {
 
     Ok(())
 }
-<<<<<<< HEAD
-=======
 
 // AI generate a meme
 // #[poise::command(slash_command)]
@@ -45,4 +43,3 @@ pub async fn get_meme(ctx: Context<'_>) -> CommandOutput {
 
 //     Ok(())
 // }
->>>>>>> 294792a (Commit from new machine)
